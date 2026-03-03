@@ -1,0 +1,44 @@
+# ── Dependencies ──
+node_modules/
+
+# ── Build output ──
+frontend/dist/
+
+# ── Environment (secrets) ──
+backend/.env
+.env
+.env.local
+.env.*.local
+
+# ── Database ──
+backend/db/*.sqlite
+backend/db/sessions/
+
+# ── Logs ──
+logs/
+*.log
+
+# ── Deployments (cloned repos + build artifacts) ──
+deployments/
+
+# ── Tunnels ──
+tunnels/
+
+# ── PM2 ──
+.pm2/
+
+# ── Cloudflare credentials (keep config.yml template) ──
+.cloudflared/cert.pem
+.cloudflared/*.json
+
+# ── OS junk ──
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ── Editor / IDE ──
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
