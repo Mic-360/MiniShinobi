@@ -17,7 +17,7 @@ module.exports = {
     {
       name: 'minishinobi-nginx',
       script: 'nginx',
-      args: '-g "daemon off;"',
+      args: '-c /data/data/com.termux/files/home/MiniShinobi/nginx/nginx.conf -g "daemon off;"',
       interpreter: 'none',
       watch: false,
       error_file:
