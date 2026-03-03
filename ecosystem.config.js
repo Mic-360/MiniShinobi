@@ -16,7 +16,8 @@ module.exports = {
     },
     {
       name: 'minishinobi-nginx',
-      script: 'nginx',
+      script: '/data/data/com.termux/files/usr/bin/nginx',
+      cwd: '/data/data/com.termux/files/home/MiniShinobi',
       args: '-c /data/data/com.termux/files/home/MiniShinobi/nginx/nginx.conf -g "daemon off;"',
       interpreter: 'none',
       watch: false,
@@ -27,8 +28,9 @@ module.exports = {
     },
     {
       name: 'minishinobi-tunnel',
-      script: 'cloudflared',
-      args: 'tunnel run minishinobi-dashboard',
+      script: '/data/data/com.termux/files/usr/bin/cloudflared',
+      cwd: '/data/data/com.termux/files/home/MiniShinobi',
+      args: '--config /data/data/com.termux/files/home/MiniShinobi/cloudflared/config.yml tunnel run minishinobi-dashboard',
       interpreter: 'none',
       watch: false,
       restart_delay: 5000,
