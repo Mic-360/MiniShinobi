@@ -3,14 +3,16 @@ module.exports = {
     {
       name: 'minishinobi-backend',
       script: 'src/app.js',
-      cwd: '/data/data/com.termux/files/home/Minishinobi/backend',
+      cwd: '/data/data/com.termux/files/home/MiniShinobi/backend',
       instances: 1,
       exec_mode: 'fork',
       watch: false,
       max_memory_restart: '400M',
       env: { NODE_ENV: 'production' },
-      error_file: '/data/data/com.termux/files/home/Minishinobi/logs/backend-error.log',
-      out_file: '/data/data/com.termux/files/home/Minishinobi/logs/backend-out.log',
+      error_file:
+        '/data/data/com.termux/files/home/MiniShinobi/logs/backend-error.log',
+      out_file:
+        '/data/data/com.termux/files/home/MiniShinobi/logs/backend-out.log',
     },
     {
       name: 'minishinobi-nginx',
@@ -18,8 +20,10 @@ module.exports = {
       args: '-g "daemon off;"',
       interpreter: 'none',
       watch: false,
-      error_file: '/data/data/com.termux/files/home/Minishinobi/logs/nginx-error.log',
-      out_file: '/data/data/com.termux/files/home/Minishinobi/logs/nginx-out.log',
+      error_file:
+        '/data/data/com.termux/files/home/MiniShinobi/logs/nginx-error.log',
+      out_file:
+        '/data/data/com.termux/files/home/MiniShinobi/logs/nginx-out.log',
     },
     {
       name: 'minishinobi-tunnel',
@@ -28,8 +32,10 @@ module.exports = {
       interpreter: 'none',
       watch: false,
       restart_delay: 5000,
-      error_file: '/data/data/com.termux/files/home/Minishinobi/logs/tunnel-error.log',
-      out_file: '/data/data/com.termux/files/home/Minishinobi/logs/tunnel-out.log',
+      error_file:
+        '/data/data/com.termux/files/home/MiniShinobi/logs/tunnel-error.log',
+      out_file:
+        '/data/data/com.termux/files/home/MiniShinobi/logs/tunnel-out.log',
     },
   ],
 };
