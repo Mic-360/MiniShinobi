@@ -26,7 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 const SESSION_DIR = path.join(path.dirname(process.env.DB_PATH), 'sessions');
 fs.mkdirSync(SESSION_DIR, { recursive: true });
 
-app.set('trust proxy', 1);
+app.set('trust proxy', true);
 
 app.use(session({
   store: new FileStore({
