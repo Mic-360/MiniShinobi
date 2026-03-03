@@ -130,8 +130,8 @@ npm install -g npm@latest pm2 serve pnpm yarn
 
 ```bash
 cd $HOME
-git clone https://github.com/yourusername/MiniShinobi.git minishinobi
-cd minishinobi
+git clone https://github.com/yourusername/MiniShinobi.git
+cd MiniShinobi
 ```
 
 ### 3. Install dependencies
@@ -165,10 +165,10 @@ GITHUB_CLIENT_SECRET=<your GitHub OAuth Client Secret>
 GITHUB_CALLBACK_URL=https://dashboard.yourdomain.com/auth/github/callback
 DASHBOARD_URL=https://dashboard.yourdomain.com
 
-DB_PATH=$HOME/minishinobi/backend/db/minishinobi.sqlite
-DEPLOYMENTS_DIR=$HOME/minishinobi/deployments
-TUNNELS_DIR=$HOME/minishinobi/tunnels
-LOGS_DIR=$HOME/minishinobi/logs
+DB_PATH=$HOME/MiniShinobi/backend/db/minishinobi.sqlite
+DEPLOYMENTS_DIR=$HOME/MiniShinobi/deployments
+TUNNELS_DIR=$HOME/MiniShinobi/tunnels
+LOGS_DIR=$HOME/MiniShinobi/logs
 ```
 
 ### 5. Set up directories
@@ -465,7 +465,7 @@ pm2 logs minishinobi-backend --lines 50
 ### Session errors (ENOENT)
 
 ```bash
-mkdir -p $HOME/minishinobi/backend/db/sessions
+mkdir -p $HOME/MiniShinobi/backend/db/sessions
 pm2 restart minishinobi-backend
 ```
 
@@ -526,8 +526,8 @@ echo 'pm2 resurrect --silent 2>/dev/null &' >> ~/.bashrc
 ### Inspect the database manually
 
 ```bash
-sqlite3 $HOME/minishinobi/backend/db/minishinobi.sqlite ".tables"
-sqlite3 $HOME/minishinobi/backend/db/minishinobi.sqlite \
+sqlite3 $HOME/MiniShinobi/backend/db/minishinobi.sqlite ".tables"
+sqlite3 $HOME/MiniShinobi/backend/db/minishinobi.sqlite \
   "SELECT id, status, tunnel_url FROM deployments ORDER BY id DESC LIMIT 5;"
 ```
 
