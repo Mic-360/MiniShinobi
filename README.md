@@ -14,6 +14,7 @@
   <a href="#quick-start">Quick Start</a> •
   <a href="#configuration">Configuration</a> •
   <a href="#usage">Usage</a> •
+  <a href="#visual-workflow">Visual Workflow</a> •
   <a href="#project-structure">Project Structure</a> •
   <a href="#deployment-flow">Deployment Flow</a> •
   <a href="#troubleshooting">Troubleshooting</a> •
@@ -277,9 +278,31 @@ Also go to **Android Settings → Apps → Termux → Battery → Unrestricted**
 
 ## Usage
 
-### Dashboard
-
 Navigate to `https://dashboard.yourdomain.com` and sign in with GitHub.
+
+## Visual Workflow
+
+| Step 1: Login | Step 2: Dashboard |
+| :---: | :---: |
+| ![Login](assets/image-1.png) | ![Dashboard](assets/image-2.png) |
+| **Authentication via GitHub OAuth** | **Overview of all your projects** |
+
+| Step 3: Create Project | Step 4: Configure |
+| :---: | :---: |
+| ![New Project](assets/image-3.png) | ![Configuration](assets/image-4.png) |
+| **Add a new repository** | **Setup build and install commands** |
+
+| Step 5: Build Logs | Step 6: Ready |
+| :---: | :---: |
+| ![Build Logs](assets/image-5.png) | ![Ready](assets/image-6.png) |
+| **Real-time deployment monitoring** | **Successful deployment status** |
+
+| Step 7: Live App |
+| :---: |
+| ![Live App](assets/image-7.png) |
+| **Your project live on your domain** |
+
+<br />
 
 ### Creating a Project
 
