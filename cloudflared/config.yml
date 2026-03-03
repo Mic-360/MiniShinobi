@@ -1,0 +1,41 @@
+# ┌──────────────────────────────────────────────────┐
+# │  MiniShinobi — Cloudflare Tunnel Configuration  │
+# └──────────────────────────────────────────────────┘
+#
+# This file is used by cloudflared to route incoming
+# traffic from your custom domain to the local Nginx
+# reverse proxy on port 4000.
+#
+# Usage:
+#   1. Create the tunnel:
+#      cloudflared tunnel create minishinobi-dashboard
+#
+#   2. Get your TUNNEL_ID:
+#      cloudflared tunnel list | grep minishinobi-dashboard | awk '{print $1}'
+#
+#   3. Replace <TUNNEL_ID> below with the real value.
+#
+#   4. Replace <yourdomain.com> with your actual domain.
+#
+#   5. Create DNS record:
+#      cloudflared tunnel route dns minishinobi-dashboard dashboard.<yourdomain.com>
+#
+#   6. Copy this file to ~/.cloudflared/config.yml
+#
+#   7. Start the tunnel:
+#      cloudflared tunnel run minishinobi-dashboard
+#
+# ──────────────────────────────────────────────────
+
+tunnel: <TUNNEL_ID>
+credentials-file: /data/data/com.termux/files/home/.cloudflared/<TUNNEL_ID>.json
+
+ingress:
+  # Dashboard — routes to Nginx on port 4000
+  - hostname: dashboard.<yourdomain.com>
+    service: http://localhost:4000
+
+  # Catch-all — returns 404 for unmatched hostnames
+  # NOTE: The deployer will dynamically insert new ingress
+  # rules above this line for each deployed project.
+  - service: http_status:404
