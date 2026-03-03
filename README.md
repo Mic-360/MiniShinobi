@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="frontend/public/mini-shinobi.png" alt="MiniShinobi" width="120" />
+  <img src="frontend/public/mini-shinobi.png" alt="MiniShinobi" width="256" />
 </p>
 
 <h1 align="center">MiniShinobi</h1>
