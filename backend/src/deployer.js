@@ -127,26 +127,33 @@ async function deploy(deploymentId) {
     const startCmd = project.start_command?.trim();
     const outputPath = project.output_dir ? path.join(buildDir, project.output_dir) : null;
     const isStaticSite = !startCmd && outputPath && fs.existsSync(outputPath);
+    const LOGS_DIR = process.env.LOGS_DIR || path.join(__dirname, '../logs');
+    fs.mkdirSync(LOGS_DIR, { recursive: true });
 
     if (isStaticSite) {
-      // True static site (e.g. Vite, CRA) — no start command, just serve build output as files
       broadcastLog(deploymentId, 'system', `Serving static files from "${project.output_dir}" on port ${port}`);
+      const logFile = path.join(LOGS_DIR, `app-${project.id}-${deploymentId}.log`);
+      const out = fs.openSync(logFile, 'a');
       const p = spawn('serve', ['-s', outputPath, '-l', String(port)],
-        { detached: true, stdio: 'ignore' });
+        { detached: true, stdio: ['ignore', out, out] });
       p.unref();
       appPid = p.pid;
     } else {
-      // Node server app (Next.js, Express, etc.) — run start_command or fall back to npm start
       const cmd = startCmd || 'npm start';
       broadcastLog(deploymentId, 'system', `Starting Node server with: ${cmd} on port ${port}`);
-      const p = spawn('sh', ['-c', cmd], {
+      const logFile = path.join(LOGS_DIR, `app-${project.id}-${deploymentId}.log`);
+      const out = fs.openSync(logFile, 'a');
+
+      // Use exec to replace the shell process with the actual command process
+      const p = spawn('sh', ['-c', `exec ${cmd}`], {
         cwd: buildDir,
         env: { ...process.env, PORT: String(port), NODE_ENV: 'production' },
         detached: true,
-        stdio: 'ignore',
+        stdio: ['ignore', out, out],
       });
       p.unref();
       appPid = p.pid;
+      broadcastLog(deploymentId, 'system', `Logs available at: logs/app-${project.id}-${deploymentId}.log`);
     }
 
     // Step 6: Tunnel
