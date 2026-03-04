@@ -15,7 +15,7 @@ router.get('/', requireAuth, (req, res) => {
 router.post('/', requireAuth, (req, res) => {
   const {
     name, repo_url, branch = 'main',
-    install_command, build_command, output_dir, framework,
+    install_command, build_command, output_dir, start_command, framework,
   } = req.body;
   if (!name || !repo_url)
     return res.status(400).json({ error: 'name and repo_url are required' });
@@ -23,13 +23,14 @@ router.post('/', requireAuth, (req, res) => {
   try {
     const result = db.prepare(
       `INSERT INTO projects
-        (user_id, name, slug, repo_url, branch, install_command, build_command, output_dir, framework)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        (user_id, name, slug, repo_url, branch, install_command, build_command, output_dir, start_command, framework)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
       req.user.id, name, slug, repo_url, branch,
       install_command || 'npm install',
       build_command || 'npm run build',
-      output_dir || 'dist',
+      output_dir || null,
+      start_command || null,
       framework || null
     );
     res.status(201).json(

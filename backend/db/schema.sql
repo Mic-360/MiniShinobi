@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS projects (
   branch          TEXT NOT NULL DEFAULT 'main',
   install_command TEXT NOT NULL DEFAULT 'npm install',
   build_command   TEXT NOT NULL DEFAULT 'npm run build',
-  output_dir      TEXT NOT NULL DEFAULT 'dist',
+  output_dir      TEXT,
+  start_command   TEXT,
   framework       TEXT,
   created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(user_id, slug)

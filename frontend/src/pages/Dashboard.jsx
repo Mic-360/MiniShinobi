@@ -11,7 +11,8 @@ export default function Dashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form, setForm] = useState({
     name: '', repo_url: '', branch: 'main',
-    install_command: 'npm install', build_command: 'npm run build', output_dir: 'dist',
+    install_command: 'npm install', build_command: 'npm run build',
+    output_dir: '', start_command: '',
   });
   const [isCreating, setIsCreating] = useState(false);
 
@@ -24,7 +25,7 @@ export default function Dashboard() {
       const { data } = await createProject(form);
       setProjects(p => [data, ...p]);
       setIsModalOpen(false);
-      setForm({ name: '', repo_url: '', branch: 'main', install_command: 'npm install', build_command: 'npm run build', output_dir: 'dist' });
+      setForm({ name: '', repo_url: '', branch: 'main', install_command: 'npm install', build_command: 'npm run build', output_dir: '', start_command: '' });
     } finally {
       setIsCreating(false);
     }
@@ -97,12 +98,18 @@ export default function Dashboard() {
 
           <div className="grid grid-cols-2 gap-4">
             <Input label="Branch" placeholder="main" value={form.branch} onChange={e => setForm(f => ({ ...f, branch: e.target.value }))} />
-            <Input label="Output Directory" placeholder="dist" value={form.output_dir} onChange={e => setForm(f => ({ ...f, output_dir: e.target.value }))} />
+            <Input label="Output Directory" placeholder="dist (leave blank for Node apps)" value={form.output_dir} onChange={e => setForm(f => ({ ...f, output_dir: e.target.value }))} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <Input label="Install Command" placeholder="npm install" value={form.install_command} onChange={e => setForm(f => ({ ...f, install_command: e.target.value }))} />
             <Input label="Build Command" placeholder="npm run build" value={form.build_command} onChange={e => setForm(f => ({ ...f, build_command: e.target.value }))} />
           </div>
+          <Input
+            label="Start Command"
+            placeholder="next start  (leave blank for static sites)"
+            value={form.start_command}
+            onChange={e => setForm(f => ({ ...f, start_command: e.target.value }))}
+          />
 
           <div className="flex justify-end gap-3 border-t border-zinc-800 pt-5 mt-6">
             <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>

@@ -121,20 +121,29 @@ async function deploy(deploymentId) {
     }
 
     // Step 5: Serve
-    const outputPath = path.join(buildDir, project.output_dir);
     const port = await getFreePort();
     let appPid;
-    if (fs.existsSync(outputPath)) {
-      broadcastLog(deploymentId, 'system', `Serving static output on port ${port}`);
+
+    const startCmd = project.start_command?.trim();
+    const outputPath = project.output_dir ? path.join(buildDir, project.output_dir) : null;
+    const isStaticSite = !startCmd && outputPath && fs.existsSync(outputPath);
+
+    if (isStaticSite) {
+      // True static site (e.g. Vite, CRA) — no start command, just serve build output as files
+      broadcastLog(deploymentId, 'system', `Serving static files from "${project.output_dir}" on port ${port}`);
       const p = spawn('serve', ['-s', outputPath, '-l', String(port)],
         { detached: true, stdio: 'ignore' });
       p.unref();
       appPid = p.pid;
     } else {
-      broadcastLog(deploymentId, 'system', `Starting Node app on port ${port}`);
-      const p = spawn('sh', ['-c', 'npm start'], {
-        cwd: buildDir, env: { ...process.env, PORT: String(port) },
-        detached: true, stdio: 'ignore',
+      // Node server app (Next.js, Express, etc.) — run start_command or fall back to npm start
+      const cmd = startCmd || 'npm start';
+      broadcastLog(deploymentId, 'system', `Starting Node server with: ${cmd} on port ${port}`);
+      const p = spawn('sh', ['-c', cmd], {
+        cwd: buildDir,
+        env: { ...process.env, PORT: String(port), NODE_ENV: 'production' },
+        detached: true,
+        stdio: 'ignore',
       });
       p.unref();
       appPid = p.pid;
