@@ -130,12 +130,19 @@ async function deploy(deploymentId) {
     const LOGS_DIR = process.env.LOGS_DIR || path.join(__dirname, '../logs');
     fs.mkdirSync(LOGS_DIR, { recursive: true });
 
+    const appEnv = {
+      ...process.env,
+      PORT: String(port),
+      NODE_ENV: 'production',
+      PATH: `${path.join(buildDir, 'node_modules', '.bin')}${path.delimiter}${process.env.PATH}`,
+    };
+
     if (isStaticSite) {
       broadcastLog(deploymentId, 'system', `Serving static files from "${project.output_dir}" on port ${port}`);
       const logFile = path.join(LOGS_DIR, `app-${project.id}-${deploymentId}.log`);
       const out = fs.openSync(logFile, 'a');
       const p = spawn('serve', ['-s', outputPath, '-l', String(port)],
-        { detached: true, stdio: ['ignore', out, out] });
+        { cwd: buildDir, env: appEnv, detached: true, stdio: ['ignore', out, out] });
       p.unref();
       appPid = p.pid;
     } else {
@@ -147,7 +154,7 @@ async function deploy(deploymentId) {
       // Use exec to replace the shell process with the actual command process
       const p = spawn('sh', ['-c', `exec ${cmd}`], {
         cwd: buildDir,
-        env: { ...process.env, PORT: String(port), NODE_ENV: 'production' },
+        env: appEnv,
         detached: true,
         stdio: ['ignore', out, out],
       });
