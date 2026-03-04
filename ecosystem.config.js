@@ -30,7 +30,7 @@ module.exports = {
       name: 'minishinobi-tunnel',
       script: '/data/data/com.termux/files/usr/bin/cloudflared',
       cwd: '/data/data/com.termux/files/home/MiniShinobi',
-      args: '--config /data/data/com.termux/files/home/MiniShinobi/cloudflared/config.yml tunnel run minishinobi-dashboard',
+      args: '--config /data/data/com.termux/files/home/.cloudflared/config.yml tunnel run minishinobi-dashboard',
       interpreter: 'none',
       watch: false,
       restart_delay: 5000,
