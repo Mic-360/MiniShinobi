@@ -214,19 +214,36 @@ async function createNamedTunnel(deploymentId, projectSlug, port) {
   if (fs.existsSync(configPath)) {
     broadcastLog(deploymentId, 'system', `Updating cloudflared config...`);
     let configContent = fs.readFileSync(configPath, 'utf8');
-    const newIngress = `  - hostname: ${subdomain}\n    service: http://localhost:${port}\n  - service: http_status:404`;
 
-    if (configContent.includes('  - service: http_status:404') && !configContent.includes(`hostname: ${subdomain}`)) {
-      configContent = configContent.replace('  - service: http_status:404', newIngress);
-      fs.writeFileSync(configPath, configContent);
+    // Parse ingress lines
+    let lines = configContent.split('\n');
+    let ingressStartIndex = lines.findIndex(l => l.trim() === 'ingress:');
+
+    if (ingressStartIndex !== -1) {
+      // Filter out existing rules for this subdomain and the catch-all 404
+      const filteredLines = lines.filter((l, i) => {
+        if (i <= ingressStartIndex) return true;
+        if (l.includes(`hostname: ${subdomain}`)) return false;
+        if (i > 0 && lines[i - 1].includes(`hostname: ${subdomain}`)) return false; // skip service line
+        if (l.includes('service: http_status:404')) return false;
+        return true;
+      });
+
+      // Insert new rule and restore catch-all at the end
+      const newLines = [
+        ...filteredLines,
+        `  - hostname: ${subdomain}`,
+        `    service: http://localhost:${port}`,
+        `  - service: http_status:404`
+      ];
+
+      fs.writeFileSync(configPath, newLines.join('\n'));
       broadcastLog(deploymentId, 'system', 'Ingress rules updated.');
 
       try {
         if (process.platform === 'android' || process.platform === 'linux') {
           execSync('pkill -HUP cloudflared');
           broadcastLog(deploymentId, 'system', 'Reloaded cloudflared configuration.');
-        } else {
-          broadcastLog(deploymentId, 'system', 'Please manually restart cloudflared if needed on Windows.');
         }
       } catch (err) {
         broadcastLog(deploymentId, 'stderr', `Failed to reload cloudflared: ${err.message}`);
@@ -245,7 +262,30 @@ function stopDeployment(deploymentId) {
   if (dep.pid) try { treeKill(Number(dep.pid), 'SIGTERM'); } catch (_) { }
   if (dep.tunnel_pid) try { treeKill(Number(dep.tunnel_pid), 'SIGTERM'); } catch (_) { }
   updateDeployment(deploymentId, { status: 'cancelled' });
+
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(dep.project_id);
+
+  // Clean up config.yml entry
+  const subdomain = `${project.slug || project.name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '')}.bhaumicsingh.tech`;
+  const os = require('os');
+  const projectConfigPath = path.join(__dirname, '../../.cloudflared/config.yml');
+  const homeConfigPath = path.join(os.homedir(), '.cloudflared/config.yml');
+  const configPath = fs.existsSync(projectConfigPath) ? projectConfigPath : homeConfigPath;
+
+  if (fs.existsSync(configPath)) {
+    let content = fs.readFileSync(configPath, 'utf8');
+    if (content.includes(subdomain)) {
+      const lines = content.split('\n');
+      const filtered = lines.filter((l, i) => {
+        if (l.includes(`hostname: ${subdomain}`)) return false;
+        if (i > 0 && lines[i - 1].includes(`hostname: ${subdomain}`)) return false;
+        return true;
+      });
+      fs.writeFileSync(configPath, filtered.join('\n'));
+      try { execSync('pkill -HUP cloudflared'); } catch (_) { }
+    }
+  }
+
   const buildDir = path.join(DEPLOYMENTS_DIR, `${project.id}-${deploymentId}`);
   try { fs.rmSync(buildDir, { recursive: true, force: true }); } catch (_) { }
 }
