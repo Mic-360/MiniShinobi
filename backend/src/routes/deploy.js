@@ -1,6 +1,7 @@
 ﻿const crypto = require('crypto');
 const express = require('express');
 const deployer = require('../deployer');
+const { projectNameFromRepoUrl } = require('../services/gitManager');
 
 const router = express.Router();
 
@@ -23,23 +24,55 @@ function validateSignature(req) {
   return safeCompare(String(provided), digest);
 }
 
+function validateCliSecret(req) {
+  const secret = process.env.WEBHOOK_SECRET;
+  if (!secret) return true;
+
+  const provided = req.headers['x-minishinobi-secret'];
+  if (!provided) return false;
+  return safeCompare(String(provided), secret);
+}
+
 router.post('/', async (req, res) => {
   try {
-    if (!validateSignature(req)) {
-      return res.status(401).json({ error: 'Invalid webhook signature' });
+    const webhookRepoUrl = req.body?.repository?.clone_url;
+    const cliRepoUrl = req.body?.repo;
+
+    if (webhookRepoUrl) {
+      if (!validateSignature(req)) {
+        return res.status(401).json({ error: 'Invalid webhook signature' });
+      }
+
+      const ref = req.body?.ref || 'refs/heads/main';
+      const deploymentId = await deployer.queueWebhookDeploy({ repoUrl: webhookRepoUrl, ref });
+      return res.status(202).json({
+        deploymentId,
+        project: projectNameFromRepoUrl(webhookRepoUrl),
+        status: 'queued',
+        mode: 'webhook',
+      });
     }
 
-    const repoUrl = req.body?.repository?.clone_url;
-    const ref = req.body?.ref || 'refs/heads/main';
+    if (cliRepoUrl) {
+      if (!validateCliSecret(req)) {
+        return res.status(401).json({ error: 'Invalid CLI secret. Provide x-minishinobi-secret header.' });
+      }
 
-    if (!repoUrl) {
-      return res.status(400).json({ error: 'repository.clone_url is required' });
+      const ref = req.body?.ref || 'refs/heads/main';
+      const deploymentId = await deployer.queueWebhookDeploy({ repoUrl: cliRepoUrl, ref });
+      return res.status(202).json({
+        deploymentId,
+        project: projectNameFromRepoUrl(cliRepoUrl),
+        status: 'queued',
+        mode: 'cli',
+      });
     }
 
-    const deploymentId = await deployer.queueWebhookDeploy({ repoUrl, ref });
-    res.status(202).json({ deploymentId, status: 'queued' });
+    return res.status(400).json({
+      error: 'Missing repository URL. Provide repository.clone_url (webhook) or repo (CLI).',
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 
