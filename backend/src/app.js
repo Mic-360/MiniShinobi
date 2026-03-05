@@ -40,7 +40,7 @@ app.use(session({
     path: SESSION_DIR,
     ttl: 7 * 24 * 60 * 60,
     retries: 1,
-    logFn: () => {},
+    logFn: () => { },
   }),
   secret: process.env.SESSION_SECRET,
   resave: false,
