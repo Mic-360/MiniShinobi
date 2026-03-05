@@ -92,6 +92,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Routes
+app.use('/deploy', require('./routes/deploy'));
 app.use('/auth', require('./routes/auth'));
 app.use('/api/projects', require('./routes/projects'));
 app.use('/api/deployments', require('./routes/deployments'));
