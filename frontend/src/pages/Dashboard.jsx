@@ -1,45 +1,91 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { createProject, deleteProject, getProjects } from '../api';
+import { createProject, deleteProject, getGitHubRepos, getProjects } from '../api';
 import { Layout } from '../components/Layout';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Modal } from '../components/ui/Modal';
 
+const EMPTY_FORM = {
+  name: '',
+  repo_url: '',
+  branch: 'main',
+  install_command: 'npm install',
+  build_command: 'npm run build',
+  output_dir: '',
+  start_command: '',
+};
+
 export default function Dashboard() {
   const [projects, setProjects] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [form, setForm] = useState({
-    name: '',
-    repo_url: '',
-    branch: 'main',
-    install_command: 'npm install',
-    build_command: 'npm run build',
-    output_dir: '',
-    start_command: '',
-  });
+  const [form, setForm] = useState(EMPTY_FORM);
   const [isCreating, setIsCreating] = useState(false);
+  const [repositories, setRepositories] = useState([]);
+  const [loadingRepos, setLoadingRepos] = useState(false);
+  const [repoError, setRepoError] = useState('');
 
   useEffect(() => {
-    getProjects().then((r) => setProjects(r.data));
+    getProjects().then(r => setProjects(r.data));
   }, []);
+
+  const loadRepositories = async () => {
+    setLoadingRepos(true);
+    setRepoError('');
+
+    try {
+      const { data } = await getGitHubRepos();
+      setRepositories(data.repositories || []);
+    } catch (err) {
+      setRepositories([]);
+      setRepoError(err.response?.data?.error || err.message || 'Failed to load repositories');
+    } finally {
+      setLoadingRepos(false);
+    }
+  };
+
+  const openImportModal = async () => {
+    setIsModalOpen(true);
+    await loadRepositories();
+  };
+
+  const resetModal = () => {
+    setIsModalOpen(false);
+    setForm(EMPTY_FORM);
+    setRepoError('');
+  };
+
+  const handleRepositorySelect = (cloneUrl) => {
+    const selected = repositories.find(r => r.clone_url === cloneUrl);
+    if (!selected) {
+      setForm(f => ({ ...f, repo_url: cloneUrl }));
+      return;
+    }
+
+    setForm(f => ({
+      ...f,
+      repo_url: selected.clone_url,
+      branch: selected.default_branch || f.branch,
+      name: f.name || selected.name,
+    }));
+  };
 
   const handleCreate = async (e) => {
     e.preventDefault();
     setIsCreating(true);
+
     try {
       const { data } = await createProject(form);
-      setProjects((p) => [data, ...p]);
-      setIsModalOpen(false);
-      setForm({
-        name: '',
-        repo_url: '',
-        branch: 'main',
-        install_command: 'npm install',
-        build_command: 'npm run build',
-        output_dir: '',
-        start_command: '',
-      });
+      setProjects(p => [data, ...p]);
+
+      if (data.webhook && !data.webhook.ok) {
+        alert(`Project created, but webhook setup failed: ${data.webhook.message}`);
+      }
+
+      resetModal();
+    } catch (err) {
+      const message = err.response?.data?.error || err.message || 'Failed to create project';
+      alert(message);
     } finally {
       setIsCreating(false);
     }
@@ -49,7 +95,7 @@ export default function Dashboard() {
     e.preventDefault();
     if (!confirm('Are you sure you want to delete this project?')) return;
     await deleteProject(id);
-    setProjects((p) => p.filter((x) => x.id !== id));
+    setProjects(p => p.filter(x => x.id !== id));
   };
 
   return (
@@ -64,7 +110,7 @@ export default function Dashboard() {
           </p>
         </div>
         <Button
-          onClick={() => setIsModalOpen(true)}
+          onClick={openImportModal}
           className='w-full sm:w-auto'
         >
           + New Project
@@ -160,12 +206,11 @@ export default function Dashboard() {
             No projects found
           </h3>
           <p className='text-sm text-zinc-400 mt-1 mb-5 max-w-sm'>
-            Get started by creating your first project and connect your GitHub
-            repository.
+            Get started by creating your first project and connect your GitHub repository.
           </p>
           <Button
             variant='secondary'
-            onClick={() => setIsModalOpen(true)}
+            onClick={openImportModal}
           >
             Create Project
           </Button>
@@ -174,27 +219,51 @@ export default function Dashboard() {
 
       <Modal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={resetModal}
         title='Import Project'
       >
         <form
           onSubmit={handleCreate}
           className='space-y-4'
         >
+          <div className='space-y-1.5'>
+            <label className='block text-xs font-medium text-zinc-400'>GitHub Repository</label>
+            <select
+              className='flex h-9 w-full rounded-md border border-zinc-800 bg-zinc-900/50 px-3 py-1 text-sm text-zinc-100 shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-zinc-500 disabled:cursor-not-allowed disabled:opacity-50'
+              value={form.repo_url}
+              onChange={(e) => handleRepositorySelect(e.target.value)}
+              disabled={loadingRepos || isCreating}
+              required
+            >
+              <option value=''>
+                {loadingRepos ? 'Loading repositories...' : 'Select a repository'}
+              </option>
+              {repositories.map(repo => (
+                <option
+                  key={repo.id}
+                  value={repo.clone_url}
+                >
+                  {repo.full_name}{repo.private ? ' (private)' : ''}
+                </option>
+              ))}
+            </select>
+            {repoError && (
+              <p className='text-xs text-red-400'>
+                {repoError}
+              </p>
+            )}
+            {!repoError && (
+              <p className='text-xs text-zinc-500'>
+                Repository list comes from your authenticated GitHub account.
+              </p>
+            )}
+          </div>
+
           <Input
             label='Project Name'
             placeholder='my-app'
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            required
-          />
-          <Input
-            label='GitHub Repository URL'
-            placeholder='https://github.com/user/repo'
-            value={form.repo_url}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, repo_url: e.target.value }))
-            }
             required
           />
 
@@ -216,6 +285,7 @@ export default function Dashboard() {
               }
             />
           </div>
+
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
             <Input
               label='Install Command'
@@ -234,6 +304,7 @@ export default function Dashboard() {
               }
             />
           </div>
+
           <Input
             label='Start Command'
             placeholder='next start  (leave blank for static sites)'
@@ -243,19 +314,25 @@ export default function Dashboard() {
             }
           />
 
+          <div className='rounded-md border border-zinc-800 bg-zinc-900/40 p-3'>
+            <p className='text-xs text-zinc-400'>
+              After project creation, MiniShinobi will automatically create or update a GitHub push webhook for this repository.
+            </p>
+          </div>
+
           <div className='flex justify-end gap-3 border-t border-zinc-800 pt-5 mt-6'>
             <Button
               type='button'
               variant='ghost'
-              onClick={() => setIsModalOpen(false)}
+              onClick={resetModal}
             >
               Cancel
             </Button>
             <Button
               type='submit'
-              disabled={isCreating}
+              disabled={isCreating || loadingRepos}
             >
-              {isCreating ? 'Importing...' : 'Deploy'}
+              {isCreating ? 'Importing...' : 'Import & Enable Auto Deploy'}
             </Button>
           </div>
         </form>
