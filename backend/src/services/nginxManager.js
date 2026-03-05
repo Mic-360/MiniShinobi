@@ -1,0 +1,64 @@
+﻿const fs = require('fs');
+const path = require('path');
+const { runCommand } = require('./buildRunner');
+
+const ROOT_DIR = path.join(__dirname, '../../..');
+const NGINX_SITES_ENABLED_DIR = process.env.NGINX_SITES_ENABLED_DIR || path.join(ROOT_DIR, 'nginx', 'sites-enabled');
+const NGINX_RELOAD_CMD = process.env.NGINX_RELOAD_CMD || 'nginx -s reload';
+
+function renderSiteConfig({ host, port }) {
+  return [
+    'server {',
+    '    listen 80;',
+    `    server_name ${host};`,
+    '',
+    '    location / {',
+    `        proxy_pass http://127.0.0.1:${port};`,
+    '        proxy_http_version 1.1;',
+    '        proxy_set_header Host $host;',
+    '        proxy_set_header Upgrade $http_upgrade;',
+    '        proxy_set_header Connection "upgrade";',
+    '        proxy_set_header X-Real-IP $remote_addr;',
+    '        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;',
+    '        proxy_set_header X-Forwarded-Proto $scheme;',
+    '        proxy_read_timeout 86400s;',
+    '    }',
+    '}',
+    '',
+  ].join('\n');
+}
+
+function ensureSitesDirectory() {
+  fs.mkdirSync(NGINX_SITES_ENABLED_DIR, { recursive: true });
+}
+
+async function upsertProjectRoute({ projectName, host, port, onLog = () => {} }) {
+  ensureSitesDirectory();
+  const filePath = path.join(NGINX_SITES_ENABLED_DIR, `${projectName}.conf`);
+  const nextContent = renderSiteConfig({ host, port });
+
+  const current = fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf8') : null;
+  const changed = current !== nextContent;
+
+  if (changed) {
+    fs.writeFileSync(filePath, nextContent);
+    onLog('system', `Wrote nginx config: ${filePath}`);
+    await runCommand({
+      command: NGINX_RELOAD_CMD,
+      cwd: ROOT_DIR,
+      onLog,
+    });
+  } else {
+    onLog('system', `Nginx config unchanged for ${projectName}`);
+  }
+
+  return { filePath, changed };
+}
+
+module.exports = {
+  NGINX_SITES_ENABLED_DIR,
+  NGINX_RELOAD_CMD,
+  renderSiteConfig,
+  ensureSitesDirectory,
+  upsertProjectRoute,
+};
