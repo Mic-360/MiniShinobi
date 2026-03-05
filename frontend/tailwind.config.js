@@ -1,0 +1,128 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        'bg-primary': '#0f1419',
+        'bg-secondary': '#1a1f2e',
+        'bg-tertiary': '#242b38',
+        'bg-hover': '#2d3447',
+        'text-primary': '#f8f9fb',
+        'text-secondary': '#b4bcc4',
+        'text-tertiary': '#7f87a0',
+        sage: {
+          50: '#f6faf0',
+          100: '#eef5e0',
+          200: '#dcecc2',
+          300: '#c2dea3',
+          400: '#a8d185',
+          500: '#9ccc65',
+          600: '#7cb342',
+          700: '#679c34',
+          800: '#557a2c',
+          900: '#455824',
+          DEFAULT: '#9ccc65',
+          dark: '#7cb342',
+          light: '#aed581',
+          wash: 'rgba(156, 204, 101, 0.08)',
+        },
+        mocha: {
+          bg: '#1e1e2e',
+          surface: '#313244',
+          overlay: '#45475a',
+          text: '#cdd6f4',
+          subtext: '#a6adc8',
+          success: '#a6e3a1',
+          error: '#f38ba8',
+          warning: '#f9e2af',
+          info: '#89b4fa',
+          accent: '#94e2d5',
+        },
+      },
+      fontFamily: {
+        display: ['Syne', '-apple-system', 'sans-serif'],
+        body: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'Segoe UI',
+          'Helvetica Neue',
+          'sans-serif',
+        ],
+        mono: ['Fira Code', 'monospace'],
+      },
+      boxShadow: {
+        sm: '0 2px 4px rgba(0, 0, 0, 0.2)',
+        md: '0 4px 12px rgba(0, 0, 0, 0.3)',
+        lg: '0 8px 24px rgba(0, 0, 0, 0.4)',
+        xl: '0 16px 40px rgba(0, 0, 0, 0.5)',
+        sage: '0 0 12px rgba(156, 204, 101, 0.2)',
+        'sage-lg': '0 0 24px rgba(156, 204, 101, 0.3)',
+        'mocha-error': '0 0 24px rgba(243, 139, 168, 0.15)',
+      },
+      transitionTimingFunction: {
+        smooth: 'cubic-bezier(0.16, 1, 0.3, 1)',
+      },
+      animation: {
+        float: 'float 20s ease-in-out infinite',
+        'float-reverse': 'float 25s ease-in-out infinite reverse',
+        'slide-up': 'slideUp 0.6s ease-out',
+        'slide-down': 'slideDown 0.5s ease-out',
+        'fade-in': 'fadeIn 0.6s ease-out 0.2s backwards',
+        'slide-in-left': 'slideInLeft 300ms ease-out',
+        'float-y': 'floatY 1.5s ease-in-out infinite',
+        'pulse-subtle': 'pulse-subtle 1s ease-in-out infinite',
+        'loader-dot': 'loaderDot 1.4s infinite',
+        'status-pulse': 'statusPulse 1.5s ease-in-out infinite',
+        blink: 'blink 1s step-start infinite',
+      },
+      keyframes: {
+        float: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(30px)' },
+        },
+        slideUp: {
+          from: { opacity: '0', transform: 'translateY(30px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        slideDown: {
+          from: { opacity: '0', transform: 'translateY(-20px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        fadeIn: {
+          from: { opacity: '0' },
+          to: { opacity: '1' },
+        },
+        slideInLeft: {
+          from: { opacity: '0', transform: 'translateX(-20px)' },
+          to: { opacity: '1', transform: 'translateX(0)' },
+        },
+        'pulse-subtle': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.7' },
+        },
+        loaderDot: {
+          '0%, 100%': { opacity: '0.3', transform: 'translateY(0)' },
+          '50%': { opacity: '1', transform: 'translateY(-8px)' },
+        },
+        statusPulse: {
+          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { opacity: '0.6', transform: 'scale(1.3)' },
+        },
+        blink: {
+          '0%, 49%': { opacity: '1' },
+          '50%, 100%': { opacity: '0' },
+        },
+      },
+      animationDelay: {
+        0: '0ms',
+        100: '100ms',
+        200: '200ms',
+        300: '300ms',
+        400: '400ms',
+        500: '500ms',
+      },
+    },
+  },
+  plugins: [],
+};
