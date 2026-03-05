@@ -1,45 +1,51 @@
-# ── Dependencies ──
+﻿# -- Dependencies --
 node_modules/
 package-lock.json
 
-# ── Build output ──
+# -- Build output --
 frontend/dist/
 
-# ── Environment (secrets) ──
+# -- Environment (secrets) --
 backend/.env
 .env
 .env.local
 .env.*.local
 
-# ── Database ──
+# -- Database --
 backend/db/*.sqlite
 backend/db/sessions/
 
-# ── Logs ──
+# -- Logs --
 logs/
 *.log
 
-# ── Deployments (cloned repos + build artifacts) ──
+# -- Runtime assets --
+apps/
+runtime/
+nginx/sites-enabled/*.conf
+
+# -- Deployments (legacy clones + build artifacts) --
 deployments/
 
-# ── Tunnels ──
+# -- Tunnels (legacy) --
 tunnels/
 
-# ── PM2 ──
+# -- PM2 --
 .pm2/
 
-# ── Cloudflare credentials (keep config.yml template) ──
+# -- Cloudflare credentials (keep config.yml template) --
 .cloudflared/cert.pem
 .cloudflared/*.json
 
-# ── OS junk ──
+# -- OS junk --
 .DS_Store
 Thumbs.db
 Desktop.ini
 
-# ── Editor / IDE ──
+# -- Editor / IDE --
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+
