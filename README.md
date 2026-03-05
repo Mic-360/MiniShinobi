@@ -477,7 +477,7 @@ The `PORT` environment variable is always injected into the start process — yo
 
 ## API Reference
 
-All `/api/*` routes require authentication (GitHub OAuth session). The webhook route (`POST /deploy`) uses HMAC signature verification instead.
+All `/api/*` routes require authentication (GitHub OAuth session). Public routes are available for deploy and runtime control: `/deploy`, `/apps`, and `/logs/:project`.
 
 ### Authentication
 
@@ -494,9 +494,10 @@ All project routes are scoped to the authenticated user. Users cannot access eac
 
 | Method   | Path                | Description                                                      |
 | -------- | ------------------- | ---------------------------------------------------------------- |
-| `GET`    | `/api/projects`     | List all projects for the current user, ordered by creation date |
-| `POST`   | `/api/projects`     | Create a new project                                             |
-| `DELETE` | `/api/projects/:id` | Delete a project and all its data                                |
+| `GET`    | `/api/projects`       | List all projects for the current user, ordered by creation date |
+| `GET`    | `/api/projects/repos` | List repositories available from the authenticated GitHub account |
+| `POST`   | `/api/projects`       | Create a new project and automatically create/update push webhook |
+| `DELETE` | `/api/projects/:id`   | Delete a project and all its data                                |
 
 **`POST /api/projects` body:**
 
@@ -514,6 +515,8 @@ All project routes are scoped to the authenticated user. Users cannot access eac
 ```
 
 Only `name` and `repo_url` are required. The `name` is slugified to generate the project subdomain. For example, `"My Blog"` becomes `my-blog.yourdomain.com`.
+
+When creating a project, MiniShinobi also attempts to auto-create (or update) a GitHub push webhook pointing to your `/deploy` endpoint.
 
 Returns `409 Conflict` if a project with that slug already exists under your account.
 
@@ -539,11 +542,34 @@ Returns `409 Conflict` if a project with that slug already exists under your acc
 
 `stream` is one of `stdout`, `stderr`, or `system`.
 
-### Webhook
+### Deploy (Webhook + CLI)
 
-| Method | Path      | Description                                                                                |
-| ------ | --------- | ------------------------------------------------------------------------------------------ |
-| `POST` | `/deploy` | Trigger a deployment via GitHub webhook. Must include a valid `x-hub-signature-256` header |
+| Method | Path      | Description |
+| ------ | --------- | ----------- |
+| `POST` | `/deploy` | Trigger a deployment. Supports webhook mode (`repository.clone_url`) and CLI mode (`repo`). |
+
+Webhook mode expects HMAC signature (`x-hub-signature-256` or `x-minishinobi-signature`).
+
+CLI mode accepts:
+
+```json
+{
+  "repo": "https://github.com/user/repo.git",
+  "ref": "refs/heads/main"
+}
+```
+
+If `WEBHOOK_SECRET` is set, include `x-minishinobi-secret` in CLI deploy requests.
+
+### Runtime Control (CLI endpoints)
+
+| Method   | Path                     | Description |
+| -------- | ------------------------ | ----------- |
+| `GET`    | `/apps`                  | List runtime apps from `runtime/projects.json` |
+| `GET`    | `/logs/:project`         | Stream latest deployment logs (SSE) |
+| `POST`   | `/apps/:project/restart` | Restart project process |
+| `POST`   | `/apps/:project/stop`    | Stop project process |
+| `DELETE` | `/apps/:project`         | Stop process, remove app dir, remove nginx config, reload nginx |
 
 ### Health
 
@@ -761,5 +787,8 @@ This project is open source under the [MIT License](LICENSE).
   <sub>Built with ❤️ by bhaumic <br />on a Snapdragon 660 · 4 GB RAM · PixelExperience Android 13</sub><br />
   <sub>Zero native compilation: sql.js + session-file-store + child_process (built-in)</sub>
 </p>
+
+
+
 
 
