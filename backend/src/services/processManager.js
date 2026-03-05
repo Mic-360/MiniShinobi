@@ -39,12 +39,17 @@ function startProcess(project, handlers = {}) {
 
   onLog('system', `Starting process: ${startCommand}`);
 
+  const nodeBinPath = path.join(projectPath, 'node_modules', '.bin');
+  const pathKey = process.platform === 'win32' ? 'Path' : 'PATH';
+  const existingPath = (project.env || {})[pathKey] || process.env[pathKey] || '';
+
   const shell = getShellInvocation(startCommand);
   const proc = spawn(shell.bin, shell.args, {
     cwd: projectPath,
     env: {
       ...process.env,
       ...(project.env || {}),
+      [pathKey]: `${nodeBinPath}${path.delimiter}${existingPath}`,
       PORT: String(port),
       NODE_ENV: 'production',
     },
