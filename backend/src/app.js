@@ -13,13 +13,20 @@ const fs = require('fs');
 
 const { initDb } = require('./db');
 const { init: initHelpers, prepare: dbPrepare } = require('./dbHelpers');
+const { ensureRuntimeArtifacts } = require('./services/runtimeRegistry');
+const { ensureSitesDirectory } = require('./services/nginxManager');
+const { APPS_DIR } = require('./controllers/deploymentController');
 
 const app = express();
 
 app.use(morgan('dev'));
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: process.env.DASHBOARD_URL, credentials: true }));
-app.use(express.json());
+app.use(express.json({
+  verify: (req, _res, buf) => {
+    req.rawBody = Buffer.from(buf);
+  },
+}));
 app.use(express.urlencoded({ extended: true }));
 
 // Session — session-file-store, pure JavaScript, no native deps
@@ -33,7 +40,7 @@ app.use(session({
     path: SESSION_DIR,
     ttl: 7 * 24 * 60 * 60,
     retries: 1,
-    logFn: () => { },
+    logFn: () => {},
   }),
   secret: process.env.SESSION_SECRET,
   resave: false,
@@ -106,11 +113,15 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: err.message });
 });
 
-// Boot sequence: DB must be ready before we listen
+// Boot sequence: DB and runtime dirs must be ready before we listen
 initDb()
   .then(() => initHelpers())
   .then(() => {
-    const PORT = parseInt(process.env.PORT) || 3000;
+    fs.mkdirSync(APPS_DIR, { recursive: true });
+    ensureRuntimeArtifacts();
+    ensureSitesDirectory();
+
+    const PORT = parseInt(process.env.PORT, 10) || 3000;
     app.listen(PORT, '127.0.0.1', () =>
       console.log(`MiniShinobi backend running on http://127.0.0.1:${PORT}`)
     );
