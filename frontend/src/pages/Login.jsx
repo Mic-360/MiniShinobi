@@ -11,59 +11,61 @@ export default function Login() {
   }, [user, navigate]);
 
   return (
-    <div className='flex items-center justify-center min-h-screen px-4 py-8 relative overflow-hidden bg-bg-primary'>
+    <div className='flex items-center justify-center min-h-screen px-3 sm:px-4 py-6 sm:py-8 relative overflow-hidden bg-bg-primary'>
       {/* Background decorations */}
-      <div className='absolute top-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full opacity-5 bg-gradient-to-b from-sage to-transparent animate-float'></div>
-      <div className='absolute bottom-[-5%] left-[-5%] w-[400px] h-[400px] rounded-full opacity-5 bg-gradient-to-b from-sage to-transparent animate-float-reverse'></div>
+      <div className='absolute top-[-10%] right-[-10%] w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] rounded-full opacity-5 bg-gradient-to-b from-sage to-transparent animate-float'></div>
+      <div className='absolute bottom-[-5%] left-[-5%] w-[250px] h-[250px] sm:w-[400px] sm:h-[400px] rounded-full opacity-5 bg-gradient-to-b from-sage to-transparent animate-float-reverse'></div>
 
       <div className='relative z-10 w-full max-w-md'>
-        <div className='bg-bg-secondary border border-bg-tertiary rounded-3xl px-10 py-12 shadow-xl animate-slide-up'>
+        <div className='bg-bg-secondary border border-bg-tertiary rounded-2xl sm:rounded-3xl px-5 sm:px-10 py-8 sm:py-12 shadow-xl animate-slide-up'>
           {/* Header */}
-          <div className='text-center mb-10'>
-            <div className='inline-block text-5xl text-sage mb-4 animate-slide-down'>
-              ◆
-            </div>
-            <h1 className='text-3xl font-bold font-display mb-2'>
+          <div className='text-center mb-8 sm:mb-10'>
+            <img
+              src='/mini-shinobi.png'
+              alt='MiniShinobi'
+              className='inline-block h-16 w-16 sm:h-20 sm:w-20 mb-3 sm:mb-4 animate-slide-down'
+            />
+            <h1 className='text-2xl sm:text-3xl font-bold font-display mb-1 sm:mb-2'>
               MiniShinobi
             </h1>
-            <p className='text-text-secondary text-base leading-relaxed'>
+            <p className='text-text-secondary text-sm sm:text-base leading-relaxed'>
               Self-hosted micro-PaaS for Git-based deployments
             </p>
           </div>
 
           {/* Features */}
-          <div className='space-y-4 mb-8 animate-fade-in'>
-            <div className='flex gap-4 p-4 bg-bg-tertiary border border-bg-hover rounded-xl hover:bg-bg-hover hover:border-sage transition-all duration-150'>
-              <div className='flex-shrink-0 text-2xl'>⚡</div>
+          <div className='space-y-3 sm:space-y-4 mb-6 sm:mb-8 animate-fade-in'>
+            <div className='flex gap-3 sm:gap-4 p-3 sm:p-4 bg-bg-tertiary border border-bg-hover rounded-lg sm:rounded-xl hover:bg-bg-hover hover:border-sage transition-all duration-150'>
+              <div className='flex-shrink-0 text-xl sm:text-2xl'>⚡</div>
               <div>
-                <h4 className='font-semibold text-text-primary text-base mb-1'>
+                <h4 className='font-semibold text-text-primary text-sm sm:text-base mb-0.5 sm:mb-1'>
                   Deploy from Git
                 </h4>
-                <p className='text-text-secondary text-sm'>
+                <p className='text-text-secondary text-xs sm:text-sm'>
                   Push to GitHub, MiniShinobi builds and deploys automatically
                 </p>
               </div>
             </div>
 
-            <div className='flex gap-4 p-4 bg-bg-tertiary border border-bg-hover rounded-xl hover:bg-bg-hover hover:border-sage transition-all duration-150'>
-              <div className='flex-shrink-0 text-2xl'>🌐</div>
+            <div className='flex gap-3 sm:gap-4 p-3 sm:p-4 bg-bg-tertiary border border-bg-hover rounded-lg sm:rounded-xl hover:bg-bg-hover hover:border-sage transition-all duration-150'>
+              <div className='flex-shrink-0 text-xl sm:text-2xl'>🌐</div>
               <div>
-                <h4 className='font-semibold text-text-primary text-base mb-1'>
+                <h4 className='font-semibold text-text-primary text-sm sm:text-base mb-0.5 sm:mb-1'>
                   Global Access
                 </h4>
-                <p className='text-text-secondary text-sm'>
+                <p className='text-text-secondary text-xs sm:text-sm'>
                   Exposed via Cloudflare Tunnel on your custom domain
                 </p>
               </div>
             </div>
 
-            <div className='flex gap-4 p-4 bg-bg-tertiary border border-bg-hover rounded-xl hover:bg-bg-hover hover:border-sage transition-all duration-150'>
-              <div className='flex-shrink-0 text-2xl'>📱</div>
+            <div className='flex gap-3 sm:gap-4 p-3 sm:p-4 bg-bg-tertiary border border-bg-hover rounded-lg sm:rounded-xl hover:bg-bg-hover hover:border-sage transition-all duration-150'>
+              <div className='flex-shrink-0 text-xl sm:text-2xl'>📱</div>
               <div>
-                <h4 className='font-semibold text-text-primary text-base mb-1'>
+                <h4 className='font-semibold text-text-primary text-sm sm:text-base mb-0.5 sm:mb-1'>
                   Runs Everywhere
                 </h4>
-                <p className='text-text-secondary text-sm'>
+                <p className='text-text-secondary text-xs sm:text-sm'>
                   Works on Android (Termux), Raspberry Pi, or any Linux box
                 </p>
               </div>
@@ -71,17 +73,17 @@ export default function Login() {
           </div>
 
           {/* Divider */}
-          <div className='flex items-center gap-4 mb-8'>
+          <div className='flex items-center gap-4 mb-6 sm:mb-8'>
             <div className='flex-1 h-px bg-bg-tertiary'></div>
           </div>
 
           {/* GitHub Button */}
           <button
             onClick={() => (window.location.href = '/auth/github')}
-            className='w-full py-4 px-6 bg-gradient-to-r from-sage to-sage-dark text-bg-primary rounded-xl font-display font-semibold text-lg flex items-center justify-center gap-3 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150 shadow-sage hover:shadow-sage-lg'
+            className='w-full py-3 sm:py-4 px-4 sm:px-6 bg-gradient-to-r from-sage to-sage-dark text-bg-primary rounded-lg sm:rounded-xl font-display font-semibold text-sm sm:text-lg flex items-center justify-center gap-2 sm:gap-3 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-150 shadow-sage hover:shadow-sage-lg'
           >
             <svg
-              className='w-5 h-5'
+              className='w-4 h-4 sm:w-5 sm:h-5'
               fill='currentColor'
               viewBox='0 0 24 24'
             >
@@ -91,8 +93,8 @@ export default function Login() {
           </button>
 
           {/* Footer */}
-          <div className='text-center mt-8 pt-8 border-t border-bg-tertiary'>
-            <p className='text-text-tertiary text-sm'>
+          <div className='text-center mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-bg-tertiary'>
+            <p className='text-text-tertiary text-xs sm:text-sm'>
               By continuing, you agree to our Terms of Service
             </p>
           </div>
