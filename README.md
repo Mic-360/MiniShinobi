@@ -1,215 +1,97 @@
-<p align="center">
-  <img src="frontend/public/mini-shinobi.png" alt="MiniShinobi" width="256" />
+﻿<p align="center">
+  <img src="frontend/public/mini-shinobi.png" alt="MiniShinobi" width="220" />
 </p>
 
 <h1 align="center">MiniShinobi</h1>
 <p align="center">
-  <strong>A self-hosted Vercel-like deployment platform running entirely on a rooted Android device.</strong>
-</p>
-
-<p align="center">
-  <a href="#features">Features</a> •
-  <a href="#architecture">Architecture</a> •
-  <a href="#prerequisites">Prerequisites</a> •
-  <a href="#quick-start">Quick Start</a> •
-  <a href="#configuration">Configuration</a> •
-  <a href="#usage">Usage</a> •
-  <a href="#visual-workflow">Visual Workflow</a> •
-  <a href="#project-structure">Project Structure</a> •
-  <a href="#deployment-flow">Deployment Flow</a> •
-  <a href="#troubleshooting">Troubleshooting</a> •
-  <a href="#contributing">Contributing</a> •
-  <a href="#license">License</a>
+  <strong>Self-hosted micro-PaaS for Git-based deployments on low-resource devices.</strong>
 </p>
 
 ---
 
-## What is MiniShinobi?
+## Overview
 
-MiniShinobi is a **mini-Vercel** that runs inside [Termux](https://termux.dev) on a rooted Android phone. Connect your GitHub repos, hit **Deploy**, and your projects go live via Cloudflare Tunnels — all from a device that fits in your pocket.
+MiniShinobi is a lightweight deployment platform that runs in Termux (or any Linux-like host) and supports:
 
-> **Zero native compilation.** The entire stack uses pure-JavaScript packages, which means no C++ addon compilation nightmares on ARM Termux.
-
-| Component | Technology |
-|-----------|-----------|
-| Runtime | Node.js (LTS) |
-| Database | sql.js (WebAssembly SQLite) |
-| Sessions | session-file-store (JSON files) |
-| Auth | GitHub OAuth via Passport |
-| Frontend | React + Vite + Tailwind CSS |
-| Reverse Proxy | Nginx |
-| Tunneling | Cloudflare Tunnels (`cloudflared`) |
-| Process Manager | PM2 |
-
----
-
-## Features
-
-- **GitHub OAuth Login** — Sign in with your GitHub account
-- **Project Management** — Import GitHub repos with custom build commands
-- **One-Click Deploy** — Clone → Install → Build → Serve, fully automated
-- **Live Build Logs** — Real-time streaming via Server-Sent Events (SSE)
-- **Cloudflare Tunnels** — Every deployment gets a public URL
-- **Named Subdomains** — Projects are deployed to `project-slug.yourdomain.com`
-- **Build Queue** — Serialized builds to prevent OOM on resource-constrained devices
-- **PM2 Integration** — Auto-restart, log rotation, and process monitoring
-- **Static & Dynamic Apps** — Serves static builds with `serve` or Node apps with `npm start`
-- **Mobile-First Architecture** — Optimized for low-resource ARM devices (Snapdragon 660, 4 GB RAM)
+- Dashboard-triggered deployments
+- Webhook-triggered Git deployments
+- Multi-project runtime isolation using `child_process.spawn`
+- Dynamic Nginx reverse-proxy routing per deployed app
+- Cloudflare Tunnel in front of Nginx for internet exposure
+- Deployment logs with SSE streaming
 
 ---
 
 ## Architecture
 
-```
+```text
 Internet
-   │
-   ▼
-Cloudflare (yourdomain.com)
-   │  DNS → Cloudflare Tunnel
-   ▼
-cloudflared daemon (Termux)  ◄────────────────────────────────┐
-   │                                                           │
-   ├── dashboard.yourdomain.com  → localhost:4000 (Nginx)     │
-   ├── *.yourdomain.com          → localhost:PORT (apps)      │
-                                                               │
-Nginx (port 4000) ──► Express Backend (port 3000, Node.js)    │
-                                                               │
-Express Backend                                                │
-   ├── GitHub OAuth (login)                                    │
-   ├── sql.js SQLite DB                                        │
-   ├── REST API (/api/*)                                       │
-   ├── SSE stream (/api/deployments/:id/logs)                  │
-   └── Deployment Engine                                       │
-         ├── git clone                                         │
-         ├── install command                                   │
-         ├── build command                                     │
-         ├── serve output                                      │
-         └── cloudflared named tunnel ─────────────────────────┘
+  -> Cloudflare
+  -> cloudflared tunnel
+  -> Nginx (host-based routing)
+  -> MiniShinobi backend (controller + deployment engine)
+  -> Process manager (isolated child processes)
+  -> Apps (/apps/<project>)
 ```
 
-### Port Map
+### Runtime model
 
-| Service | Port |
-|---------|------|
-| Nginx (reverse proxy) | 4000 |
-| Express backend API | 3000 |
-| Deployed apps | 5000–5999 (auto-assigned) |
+- One backend API service (`backend/src/app.js`)
+- One global deployment queue (serialized builds)
+- Multiple app processes running concurrently
+- Runtime metadata persisted in `/runtime/projects.json`
+- Per-project nginx vhost file generated in `nginx/sites-enabled/*.conf`
 
 ---
 
-## Prerequisites
+## Key Features
 
-| Requirement | Details |
-|---|---|
-| **Android device** | Rooted, running Android 12+ |
-| **Termux** | Latest from [F-Droid](https://f-droid.org/packages/com.termux/) |
-| **Cloudflare account** | Free tier works — you need a domain added to Cloudflare |
-| **GitHub OAuth App** | Create one at [GitHub Developer Settings](https://github.com/settings/developers) |
+- GitHub OAuth dashboard login
+- Project CRUD and manual deployment from dashboard
+- `POST /deploy` webhook deployments (HMAC verified)
+- Git clone on first deploy, git pull on redeploy
+- Automatic framework detection (Next/Vite/Node/Static)
+- Optional `.minishinobi.json` command override
+- Automatic app port allocation/reuse
+- Process lifecycle controls: start/stop/restart
+- Nginx route generation + reload on deploy
+- SSE deployment logs and deployment history in SQLite
 
-### Tested Hardware
+---
 
-- Snapdragon 660 · 4 GB RAM · PixelExperience Android 13
+## Requirements
+
+- Node.js 18+ (LTS recommended)
+- Git
+- Nginx
+- cloudflared
+- PM2 (recommended for process supervision)
+
+For Android/Termux, install packages as needed (`nodejs-lts`, `git`, `nginx`, etc.).
 
 ---
 
 ## Quick Start
 
-### 1. Set up Termux
+### 1. Clone and install
 
 ```bash
-pkg update -y && pkg upgrade -y
-termux-setup-storage
-
-pkg install -y \
-  nodejs-lts npm git nginx sqlite \
-  curl wget unzip openssh which procps diffutils
-
-npm install -g npm@latest pm2 serve pnpm yarn
-```
-
-### 2. Clone MiniShinobi
-
-```bash
-cd $HOME
-git clone https://github.com/yourusername/MiniShinobi.git
+git clone https://github.com/Mic-360/MiniShinobi.git
 cd MiniShinobi
+
+cd backend && npm install && cd ..
+cd frontend && npm install && cd ..
 ```
 
-### 3. Install dependencies
-
-```bash
-# Backend
-cd backend
-npm install
-cd ..
-
-# Frontend
-cd frontend
-npm install
-cd ..
-```
-
-### 4. Configure environment
+### 2. Configure backend env
 
 ```bash
 cp backend/.env.example backend/.env
-chmod 600 backend/.env
 ```
 
-Edit `backend/.env` with your actual values:
+Set values in `backend/.env`.
 
-```env
-SESSION_SECRET=<output of: openssl rand -hex 32>
-
-GITHUB_CLIENT_ID=<your GitHub OAuth Client ID>
-GITHUB_CLIENT_SECRET=<your GitHub OAuth Client Secret>
-GITHUB_CALLBACK_URL=https://dashboard.yourdomain.com/auth/github/callback
-DASHBOARD_URL=https://dashboard.yourdomain.com
-
-DB_PATH=$HOME/MiniShinobi/backend/db/minishinobi.sqlite
-DEPLOYMENTS_DIR=$HOME/MiniShinobi/deployments
-TUNNELS_DIR=$HOME/MiniShinobi/tunnels
-LOGS_DIR=$HOME/MiniShinobi/logs
-```
-
-### 5. Set up directories
-
-```bash
-mkdir -p deployments tunnels logs
-```
-
-### 6. Set up Nginx
-
-```bash
-cp nginx/nginx.conf $PREFIX/etc/nginx/nginx.conf
-nginx -t && nginx
-```
-
-### 7. Set up Cloudflare Tunnel
-
-```bash
-# Download cloudflared
-wget -O cloudflared \
-  "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64"
-chmod +x cloudflared
-mv cloudflared $PREFIX/bin/cloudflared
-
-# Authenticate
-cloudflared tunnel login
-
-# Create tunnel
-cloudflared tunnel create minishinobi-dashboard
-TUNNEL_ID=$(cloudflared tunnel list | grep minishinobi-dashboard | awk '{print $1}')
-
-# Configure — edit cloudflared/config.yml with your TUNNEL_ID and domain
-cp cloudflared/config.yml $HOME/.cloudflared/config.yml
-# Edit $HOME/.cloudflared/config.yml with real values
-
-# Create DNS record
-cloudflared tunnel route dns minishinobi-dashboard dashboard.yourdomain.com
-```
-
-### 8. Build the frontend
+### 3. Build frontend
 
 ```bash
 cd frontend
@@ -217,384 +99,276 @@ npm run build
 cd ..
 ```
 
-### 9. Start everything with PM2
+### 4. Prepare directories
 
 ```bash
-pkill nginx 2>/dev/null; true
+mkdir -p apps runtime runtime/logs nginx/sites-enabled logs
+```
+
+### 5. Configure Nginx
+
+Use `nginx/nginx.conf` and ensure it includes:
+
+```nginx
+include /data/data/com.termux/files/home/MiniShinobi/nginx/sites-enabled/*.conf;
+```
+
+### 6. Configure Cloudflare Tunnel
+
+Route both dashboard and wildcard app hosts to Nginx:
+
+```yaml
+ingress:
+  - hostname: dashboard.<yourdomain.com>
+    service: http://localhost:4000
+  - hostname: '*.<yourdomain.com>'
+    service: http://localhost:4000
+  - service: http_status:404
+```
+
+### 7. Start services (example with PM2)
+
+```bash
 pm2 start ecosystem.config.js
 pm2 status
 ```
 
-### 10. Auto-start on Termux launch
+---
 
-```bash
-pm2 save
-echo 'pm2 resurrect --silent 2>/dev/null &' >> ~/.bashrc
-```
+## Environment Variables
+
+`backend/.env.example` defines all required keys.
+
+### Core
+
+- `PORT` backend listen port (default `3000`)
+- `NODE_ENV` runtime mode
+- `SESSION_SECRET` session signing secret
+- `DASHBOARD_URL` frontend URL used for auth redirect
+
+### OAuth
+
+- `GITHUB_CLIENT_ID`
+- `GITHUB_CLIENT_SECRET`
+- `GITHUB_CALLBACK_URL`
+
+### Storage/Runtime
+
+- `DB_PATH` SQLite file path
+- `LOGS_DIR` backend/platform log path
+- `APPS_DIR` deployed repo root (default `/apps` under project root)
+- `RUNTIME_DIR` runtime metadata root (default `/runtime` under project root)
+
+### Routing/Deploy
+
+- `BASE_DOMAIN` app hostname suffix (default `minishinobi.dev`)
+- `NGINX_SITES_ENABLED_DIR` generated nginx vhost target directory
+- `NGINX_RELOAD_CMD` nginx reload command (default `nginx -s reload`)
+- `WEBHOOK_SECRET` HMAC secret for `POST /deploy`
+
+### Port allocation
+
+- `APP_PORT_START`
+- `APP_PORT_END`
 
 ---
 
-## Configuration
+## Deployment Flows
 
-### GitHub OAuth App
+### A) Dashboard deployment (existing flow)
 
-1. Go to **GitHub → Settings → Developer settings → OAuth Apps → New OAuth App**
-2. Fill in:
-   - **Application name:** MiniShinobi
-   - **Homepage URL:** `https://dashboard.yourdomain.com`
-   - **Authorization callback URL:** `https://dashboard.yourdomain.com/auth/github/callback`
-3. Copy the **Client ID** and **Client Secret** into `backend/.env`
+1. Create project in dashboard (`/api/projects`)
+2. Trigger deploy (`/api/deployments/project/:projectId/deploy`)
+3. Deployment enters queue and runs in background
+4. Logs stream over SSE (`/api/deployments/:id/logs`)
 
-### Cloudflare SSL/TLS
+### B) Webhook deployment (new)
 
-In Cloudflare Dashboard:
-1. **SSL/TLS** → Set mode to **Full (strict)**
-2. **SSL/TLS → Edge Certificates** → Enable:
-   - Always Use HTTPS
-   - Minimum TLS Version: TLS 1.2
+`POST /deploy`
 
-### Battery & Performance Tuning
+Payload:
 
-For server-grade uptime:
-
-```bash
-# Keep Termux alive with screen off
-termux-wake-lock
-
-# ACC (Advanced Charging Controller) — if using Magisk
-acc -s capacity=30-85
-acc -s temperature_cooldown=40-45
-acc -s temperature_max=50
-
-# Add 1 GB swap (recommended for builds)
-su -c "dd if=/dev/zero of=/data/swapfile bs=1M count=1024"
-su -c "mkswap /data/swapfile"
-su -c "swapon /data/swapfile"
+```json
+{
+  "repository": {
+    "clone_url": "https://github.com/org/repo.git"
+  },
+  "ref": "refs/heads/main"
+}
 ```
 
-Also go to **Android Settings → Apps → Termux → Battery → Unrestricted**.
+Headers:
+
+- `x-hub-signature-256: sha256=<hmac>`
+
+HMAC input is raw request body, key is `WEBHOOK_SECRET`.
+
+### Pipeline behavior
+
+1. Resolve project name from repo URL
+2. Ensure repo exists in `/apps/<project-name>`
+3. Clone if missing; else fetch/checkout/pull
+4. Load `.minishinobi.json` if present
+5. Detect framework when needed
+6. Resolve build/start commands
+7. Run build
+8. Allocate/reuse port
+9. Restart isolated process
+10. Upsert nginx route and reload nginx
+11. Persist runtime metadata (`/runtime/projects.json`) and deployment DB state
 
 ---
 
-## Usage
+## Framework Detection
 
-Navigate to `https://dashboard.yourdomain.com` and sign in with GitHub.
+Used when `.minishinobi.json` does not override commands.
 
-## Visual Workflow
+- `next.config.js` -> Next.js
+- `vite.config.js` -> Vite
+- `package.json` -> Node app
+- `index.html` without `package.json` -> Static
 
-| Step 1: Login | Step 2: Dashboard |
-| :---: | :---: |
-| ![Login](assets/image-1.png) | ![Dashboard](assets/image-2.png) |
-| **Authentication via GitHub OAuth** | **Overview of all your projects** |
+Preset commands:
 
-| Step 3: Create Project | Step 4: Configure |
-| :---: | :---: |
-| ![New Project](assets/image-3.png) | ![Configuration](assets/image-4.png) |
-| **Add a new repository** | **Setup build and install commands** |
-
-| Step 5: Build Logs | Step 6: Ready |
-| :---: | :---: |
-| ![Build Logs](assets/image-5.png) | ![Ready](assets/image-6.png) |
-| **Real-time deployment monitoring** | **Successful deployment status** |
-
-| Step 7: Live App |
-| :---: |
-| ![Live App](assets/image-7.png) |
-| **Your project live on your domain** |
-
-<br />
-
-### Creating a Project
-
-1. Click **+ New Project**
-2. Enter the GitHub repository URL (HTTPS)
-3. Configure branch, install/build commands, and output directory
-4. Click **Deploy**
-
-### Deployment
-
-When you click **Deploy Now**:
-1. The repo is cloned with `git clone --depth 1`
-2. Commit SHA and message are captured
-3. Install command runs (e.g., `npm install`)
-4. Build command runs (e.g., `npm run build`)
-5. A free port is assigned (5000–5999)
-6. The output is served (static via `serve`, or Node app via `npm start`)
-7. A Cloudflare tunnel is created for the deployment
-8. The deployment goes **live** at `project-slug.yourdomain.com`
-
-### PM2 Commands
-
-```bash
-pm2 status                      # View all processes
-pm2 logs minishinobi-backend    # View backend logs
-pm2 logs minishinobi-tunnel     # View tunnel logs
-pm2 restart minishinobi-backend # Restart backend
-pm2 monit                       # Real-time monitoring
-pm2 stop all                    # Stop everything
-```
+- `next`: `npm install && npm run build`, `npm start`
+- `vite`: `npm install && npm run build`, `npx serve dist`
+- `node`: `npm install`, `npm start`
+- `static`: no build, `npx serve .`
 
 ---
 
-## Project Structure
+## `.minishinobi.json`
 
+Optional project-level overrides in repo root:
+
+```json
+{
+  "build": "npm install && npm run build",
+  "start": "npm start"
+}
 ```
-minishinobi/
-├── ecosystem.config.js          PM2 process manager config
-├── nginx/
-│   └── nginx.conf               Nginx reverse proxy config
-├── cloudflared/
-│   └── config.yml               Cloudflare tunnel config template
-├── backend/
-│   ├── .env                     Environment variables (gitignored)
-│   ├── .env.example             Template for .env
-│   ├── package.json
-│   ├── db/
-│   │   ├── schema.sql           SQLite schema (runs on every boot)
-│   │   ├── minishinobi.sqlite   Database file (gitignored)
-│   │   └── sessions/            Session files (gitignored)
-│   └── src/
-│       ├── app.js               Express entrypoint + boot sequence
-│       ├── db.js                sql.js loader + disk persistence
-│       ├── dbHelpers.js         prepare().get/all/run() wrapper
-│       ├── deployer.js          Build + serve + tunnel engine
-│       ├── portManager.js       Free port finder (5000–5999)
-│       └── routes/
-│           ├── auth.js          GitHub OAuth routes
-│           ├── projects.js      CRUD for projects
-│           └── deployments.js   Deploy, logs SSE, stop
-├── frontend/
-│   ├── package.json
-│   ├── index.html               SPA entry point
-│   ├── vite.config.js           Vite config with dev proxy
-│   ├── public/
-│   │   └── mini-shinobi.png     Logo
-│   └── src/
-│       ├── main.jsx
-│       ├── App.jsx              Router + auth guard
-│       ├── api.js               Axios API client
-│       ├── index.css            Tailwind + theme
-│       ├── context/
-│       │   └── AuthContext.jsx  Auth state provider
-│       ├── components/
-│       │   ├── Layout.jsx       App shell with nav
-│       │   └── ui/
-│       │       ├── Badge.jsx    Status badge component
-│       │       ├── Button.jsx   Button variants
-│       │       ├── Input.jsx    Form input component
-│       │       └── Modal.jsx    Dialog modal
-│       └── pages/
-│           ├── Login.jsx        GitHub OAuth login
-│           ├── Dashboard.jsx    Project list + create
-│           ├── Project.jsx      Deployments list
-│           └── Deployment.jsx   Live build logs
-├── deployments/                 Git clones + build artifacts (gitignored)
-├── tunnels/                     Tunnel state (gitignored)
-└── logs/                        PM2 logs (gitignored)
-```
+
+When present, these commands take precedence.
 
 ---
 
-## Deployment Flow
+## Runtime Registry
 
-```
-POST /api/deployments/project/:id/deploy
-  │
-  ├── INSERT deployments row (status: queued)
-  ├── Return 202 { deploymentId } immediately
-  └── queueDeploy(deploymentId) runs in the background
-        │
-        ├── [wait if another build is already running]
-        ├── 1. git clone --depth 1 <repo_url> into buildDir
-        ├── 2. read commit SHA and message, save to DB
-        ├── 3. sh -c "<install_command>"
-        ├── 4. sh -c "<build_command>"
-        ├── 5. getFreePort() picks next open port in 5000–5999
-        ├── 6a. output_dir exists → serve -s ./output -l PORT (static)
-        │   6b. no output_dir    → npm start with PORT env var (Node app)
-        ├── 7. cloudflared tunnel route dns + update config.yml
-        └── 8. UPDATE deployments SET status='ready', tunnel_url=...
-```
+`/runtime/projects.json` is the runtime source of truth.
 
-All stdout/stderr from every step is:
-- Line-buffered and written to the `logs` table in real time
-- Pushed live to all connected SSE clients (the log viewer in the dashboard)
-- Replayed from DB for any client that connects after the build finishes
+Example:
+
+```json
+{
+  "blog": {
+    "name": "blog",
+    "path": "/apps/blog",
+    "port": 5100,
+    "host": "blog.minishinobi.dev",
+    "status": "running",
+    "pid": 12345,
+    "framework": "vite",
+    "buildCommand": "npm install && npm run build",
+    "startCommand": "npx serve dist",
+    "updatedAt": "2026-03-05T12:00:00.000Z",
+    "createdAt": "2026-03-05T11:30:00.000Z"
+  }
+}
+```
 
 ---
 
 ## API Reference
 
-All API endpoints require authentication (GitHub OAuth session).
-
 ### Auth
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/auth/github` | Initiate GitHub OAuth login |
-| GET | `/auth/github/callback` | GitHub OAuth callback |
-| GET | `/auth/me` | Get current user info |
-| POST | `/auth/logout` | Logout |
+- `GET /auth/github`
+- `GET /auth/github/callback`
+- `GET /auth/me`
+- `POST /auth/logout`
 
 ### Projects
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/projects` | List all projects |
-| POST | `/api/projects` | Create a new project |
-| DELETE | `/api/projects/:id` | Delete a project |
+- `GET /api/projects`
+- `POST /api/projects`
+- `DELETE /api/projects/:id`
 
 ### Deployments
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/deployments/project/:projectId` | List deployments for a project |
-| POST | `/api/deployments/project/:projectId/deploy` | Trigger a new deployment |
-| GET | `/api/deployments/:id` | Get deployment details |
-| GET | `/api/deployments/:id/logs` | SSE stream of build logs |
-| DELETE | `/api/deployments/:id` | Stop a running deployment |
+- `GET /api/deployments/project/:projectId`
+- `POST /api/deployments/project/:projectId/deploy`
+- `GET /api/deployments/:id`
+- `GET /api/deployments/:id/logs`
+- `DELETE /api/deployments/:id`
+
+### Webhook
+
+- `POST /deploy`
 
 ### Health
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/health` | Health check endpoint |
+- `GET /health`
 
 ---
 
-## Database Schema
+## Repository Structure
 
-MiniShinobi uses SQLite via `sql.js` (WebAssembly). The schema is applied on every boot with `CREATE TABLE IF NOT EXISTS`:
-
-| Table | Purpose |
-|-------|---------|
-| `users` | GitHub OAuth users |
-| `projects` | Imported repositories with build config |
-| `deployments` | Build history, status, tunnel URLs, PIDs |
-| `logs` | Build log lines (stdout/stderr/system) |
+```text
+MiniShinobi/
+├─ backend/
+│  ├─ db/schema.sql
+│  └─ src/
+│     ├─ app.js
+│     ├─ deployer.js
+│     ├─ controllers/
+│     │  └─ deploymentController.js
+│     ├─ services/
+│     │  ├─ buildRunner.js
+│     │  ├─ frameworkDetector.js
+│     │  ├─ gitManager.js
+│     │  ├─ nginxManager.js
+│     │  ├─ processManager.js
+│     │  └─ runtimeRegistry.js
+│     └─ routes/
+│        ├─ auth.js
+│        ├─ deploy.js
+│        ├─ deployments.js
+│        └─ projects.js
+├─ cloudflared/config.yml
+├─ nginx/
+│  ├─ nginx.conf
+│  └─ sites-enabled/
+├─ apps/               # runtime clones (gitignored)
+├─ runtime/            # runtime metadata/logs (gitignored)
+└─ logs/               # platform logs (gitignored)
+```
 
 ---
 
 ## Troubleshooting
 
-### "DB not initialised" error
+### Webhook rejected (401)
 
-`app.js` must boot in this order: `await initDb()` → `await initHelpers()` → `app.listen()`.
+- Verify `WEBHOOK_SECRET`
+- Verify signature header and raw payload usage
 
-```bash
-pm2 logs minishinobi-backend --lines 50
-```
+### Nginx route not updated
 
-### Session errors (ENOENT)
+- Check generated file in `nginx/sites-enabled/`
+- Verify `NGINX_SITES_ENABLED_DIR` and `NGINX_RELOAD_CMD`
+- Run `nginx -t`
 
-```bash
-mkdir -p $HOME/MiniShinobi/backend/db/sessions
-pm2 restart minishinobi-backend
-```
+### App not reachable
 
-### cloudflared not connecting
+- Check `/runtime/projects.json` for status/port
+- Check project log in `/runtime/logs/<project>.log`
+- Confirm cloudflared wildcard route points to nginx
 
-```bash
-cloudflared tunnel info minishinobi-dashboard
-ls ~/.cloudflared/
-cloudflared tunnel login
-```
+### Deploy fails during build
 
-### Port already in use
-
-```bash
-ss -tlnp | grep 5000
-kill $(lsof -t -i:5000)
-```
-
-### Termux getting killed by Android
-
-```bash
-termux-wake-lock
-# Settings → Apps → Termux → Battery → Unrestricted
-```
-
-### Build OOM (out of memory)
-
-```bash
-free -h
-pkill -f 'node'
-# Set up swap — see Battery & Performance Tuning section
-```
-
-### GitHub OAuth redirect mismatch
-
-Both `GITHUB_CALLBACK_URL` in `.env` and the setting in the GitHub OAuth App must match exactly:
-```
-https://dashboard.yourdomain.com/auth/github/callback
-```
-
-### Nginx failing to start
-
-```bash
-nginx -t
-cat $PREFIX/var/log/nginx/error.log
-pkill nginx && nginx
-```
-
-### PM2 not surviving Termux restart
-
-```bash
-pm2 save
-grep "pm2 resurrect" ~/.bashrc
-# If missing:
-echo 'pm2 resurrect --silent 2>/dev/null &' >> ~/.bashrc
-```
-
-### Inspect the database manually
-
-```bash
-sqlite3 $HOME/MiniShinobi/backend/db/minishinobi.sqlite ".tables"
-sqlite3 $HOME/MiniShinobi/backend/db/minishinobi.sqlite \
-  "SELECT id, status, tunnel_url FROM deployments ORDER BY id DESC LIMIT 5;"
-```
-
----
-
-## Why pure JavaScript?
-
-Termux on ARM Android cannot reliably compile native Node.js addons. MiniShinobi avoids this entirely:
-
-| Typical Dependency | MiniShinobi Alternative | Why |
-|---|---|---|
-| `better-sqlite3` | `sql.js` | WebAssembly SQLite — zero native compilation |
-| `connect-sqlite3` | `session-file-store` | Pure JS, stores sessions as JSON files |
-| `node-pty` | `child_process.spawn` | Built-in Node.js, no native deps |
-
----
-
-## Contributing
-
-Contributions are welcome! Here's how to get started:
-
-1. **Fork** this repository
-2. **Create a branch** for your feature: `git checkout -b feat/amazing-feature`
-3. **Commit** your changes: `git commit -m 'feat: add amazing feature'`
-4. **Push** to your branch: `git push origin feat/amazing-feature`
-5. **Open a Pull Request**
-
-### Development
-
-For local development (not on Android):
-
-```bash
-# Terminal 1 — Backend
-cd backend
-cp .env.example .env
-# Edit .env with your values
-node src/app.js
-
-# Terminal 2 — Frontend (with hot reload)
-cd frontend
-npm run dev
-```
-
-The Vite dev server proxies `/api` and `/auth` requests to `localhost:3000`.
+- Inspect deployment SSE logs
+- Verify build/start commands or `.minishinobi.json`
+- Ensure system has enough memory and disk
 
 ---
 
