@@ -394,18 +394,54 @@ If any step fails, the deployment is marked as `failed` with the error message, 
 
 ## Framework Detection
 
-When a project has no custom commands set (or `.minishinobi.json` is absent), MiniShinobi auto-detects the framework by scanning the repository root:
+When a project has no custom commands set (or `.minishinobi.json` is absent), MiniShinobi auto-detects frameworks by checking config files first (including TypeScript variants), then `package.json` dependencies.
 
-| Detection Rule                      | Framework | Build Command                  | Start Command    |
-| ----------------------------------- | --------- | ------------------------------ | ---------------- |
-| `next.config.js` found              | `next`    | `npm install && npm run build` | `npm start`      |
-| `vite.config.js` found              | `vite`    | `npm install && npm run build` | `npx serve dist` |
-| `package.json` found                | `node`    | `npm install`                  | `npm start`      |
-| `index.html` with no `package.json` | `static`  | _(none)_                       | `npx serve .`    |
+### Supported frameworks
 
-Detection runs in order — the first match wins.
+- `next`
+- `nuxt`
+- `remix`
+- `astro`
+- `sveltekit`
+- `vite`
+- `node`
+- `static`
 
-### Command Priority
+### Config file detection matrix
+
+| Framework    | Config files checked |
+| ------------ | -------------------- |
+| `next`       | `next.config.js`, `next.config.mjs`, `next.config.cjs`, `next.config.ts`, `next.config.mts`, `next.config.cts` |
+| `nuxt`       | `nuxt.config.js`, `nuxt.config.mjs`, `nuxt.config.cjs`, `nuxt.config.ts`, `nuxt.config.mts`, `nuxt.config.cts` |
+| `remix`      | `remix.config.js`, `remix.config.mjs`, `remix.config.cjs`, `remix.config.ts`, `remix.config.mts`, `remix.config.cts` |
+| `astro`      | `astro.config.js`, `astro.config.mjs`, `astro.config.cjs`, `astro.config.ts`, `astro.config.mts`, `astro.config.cts` |
+| `sveltekit`  | `svelte.config.js`, `svelte.config.mjs`, `svelte.config.cjs`, `svelte.config.ts`, `svelte.config.mts`, `svelte.config.cts` (requires `@sveltejs/kit`) |
+| `vite`       | `vite.config.js`, `vite.config.mjs`, `vite.config.cjs`, `vite.config.ts`, `vite.config.mts`, `vite.config.cts` |
+
+If no config match exists, dependency fallback is used:
+
+- `next` dependency -> `next`
+- `nuxt` dependency -> `nuxt`
+- `@remix-run/node` or `@remix-run/react` -> `remix`
+- `astro` dependency -> `astro`
+- `@sveltejs/kit` dependency -> `sveltekit`
+- any `package.json` -> `node`
+- `index.html` without `package.json` -> `static`
+
+### Preset commands
+
+| Framework   | Build Command                  | Start Command    |
+| ----------- | ------------------------------ | ---------------- |
+| `next`      | `npm install && npm run build` | `npm start`      |
+| `nuxt`      | `npm install && npm run build` | `npm run start`  |
+| `remix`     | `npm install && npm run build` | `npm run start`  |
+| `astro`     | `npm install && npm run build` | `npx serve dist` |
+| `sveltekit` | `npm install && npm run build` | `npm run preview` |
+| `vite`      | `npm install && npm run build` | `npx serve dist` |
+| `node`      | `npm install`                  | `npm start`      |
+| `static`    | _(none)_                       | `npx serve .`    |
+
+### Command priority
 
 Commands are resolved in this priority order (highest wins):
 
@@ -413,7 +449,7 @@ Commands are resolved in this priority order (highest wins):
 2. **Project custom commands** — set via `POST /api/projects` with `install_command`, `build_command`, `start_command`, or `output_dir`
 3. **Auto-detected framework preset** — fallback when nothing else is set
 
-If you set an `output_dir` (e.g. `build`) but no `start_command`, the start command becomes `npx serve build`.
+If you set an `output_dir` (for example `build`) but no `start_command`, the start command becomes `npx serve <output_dir>`.
 
 ---
 
@@ -725,3 +761,5 @@ This project is open source under the [MIT License](LICENSE).
   <sub>Built with ❤️ by bhaumic <br />on a Snapdragon 660 · 4 GB RAM · PixelExperience Android 13</sub><br />
   <sub>Zero native compilation: sql.js + session-file-store + child_process (built-in)</sub>
 </p>
+
+
