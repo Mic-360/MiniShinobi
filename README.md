@@ -14,7 +14,7 @@
   <a href="#installation">Installation</a> •
   <a href="#configuration">Configuration</a> •
   <a href="#deployment-flows">Deployment Flows</a> •
-  <a href="#api-reference">API Reference</a> •
+  <a href="#api-reference">API Reference</a> •`r`n  <a href="#minishinobi-cli">CLI</a> •
   <a href="#troubleshooting">Troubleshooting</a>
 </p>
 
@@ -52,7 +52,7 @@ Internet
                             ├──> dashboard.<domain>  ──> MiniShinobi backend (port 3000)
                             │                              ├── serves built React frontend
                             │                              ├── REST API (/api/...)
-                            │                              └── POST /deploy (webhook)
+                            │                              └── POST /deploy (webhook + CLI)
                             └──> <app>.<domain>      ──> spawned app process (port 5000–5999)
 ```
 
@@ -477,7 +477,7 @@ The `PORT` environment variable is always injected into the start process — yo
 
 ## API Reference
 
-All `/api/*` routes require authentication (GitHub OAuth session). The webhook route (`POST /deploy`) uses HMAC signature verification instead.
+All `/api/*` routes require authentication (GitHub OAuth session). Public controller routes exist for webhook and CLI runtime control. `POST /deploy` supports webhook mode (HMAC signature) and CLI mode (`{ repo }` payload with optional `x-minishinobi-secret`).
 
 ### Authentication
 
@@ -539,17 +539,122 @@ Returns `409 Conflict` if a project with that slug already exists under your acc
 
 `stream` is one of `stdout`, `stderr`, or `system`.
 
-### Webhook
+### Deploy (Webhook + CLI)
 
-| Method | Path      | Description                                                                                |
-| ------ | --------- | ------------------------------------------------------------------------------------------ |
-| `POST` | `/deploy` | Trigger a deployment via GitHub webhook. Must include a valid `x-hub-signature-256` header |
+| Method | Path      | Description |
+| ------ | --------- | ----------- |
+| `POST` | `/deploy` | Trigger a deployment. Supports **webhook mode** (`repository.clone_url` + HMAC header) and **CLI mode** (`repo` field). |
+
+**Webhook mode body (GitHub-style):**
+
+```json
+{
+  "repository": { "clone_url": "https://github.com/user/repo.git" },
+  "ref": "refs/heads/main"
+}
+```
+
+Headers:
+
+- `x-hub-signature-256: sha256=<hmac>` (recommended)
+- `x-minishinobi-signature: sha256=<hmac>` (alias)
+
+**CLI mode body:**
+
+```json
+{
+  "repo": "https://github.com/user/repo.git",
+  "ref": "refs/heads/main"
+}
+```
+
+If `WEBHOOK_SECRET` is configured, CLI mode should include:
+
+- `x-minishinobi-secret: <WEBHOOK_SECRET>`
+
+### Runtime Control (CLI endpoints)
+
+| Method   | Path                        | Description |
+| -------- | --------------------------- | ----------- |
+| `GET`    | `/apps`                     | List currently tracked runtime apps from `runtime/projects.json` |
+| `GET`    | `/logs/:project`            | SSE stream for latest deployment logs of a project |
+| `POST`   | `/apps/:project/restart`    | Restart app process using saved runtime metadata |
+| `POST`   | `/apps/:project/stop`       | Stop app process |
+| `DELETE` | `/apps/:project`            | Stop process, remove app directory, remove nginx config, reload nginx |
+
+`/logs/:project` also accepts optional query param `deploymentId`.
 
 ### Health
 
 | Method | Path      | Description                                                                        |
 | ------ | --------- | ---------------------------------------------------------------------------------- |
 | `GET`  | `/health` | Returns `{ ok: true, ts: <unix-ms> }`. Use this to check if the backend is running |
+
+---
+
+## MiniShinobi CLI
+
+A terminal client is available under `cli/`.
+
+### Directory
+
+```text
+cli/
+├── index.js
+├── package.json
+├── commands/
+│   ├── deploy.js
+│   ├── apps.js
+│   ├── logs.js
+│   ├── restart.js
+│   ├── stop.js
+│   └── remove.js
+└── utils/
+    ├── apiClient.js
+    └── config.js
+```
+
+### Install CLI
+
+```bash
+cd cli
+npm install
+npm install -g .
+```
+
+This installs `minishinobi` globally.
+
+### Configure server
+
+```bash
+minishinobi config set-server http://localhost:3000
+minishinobi config show
+```
+
+Config is stored at `~/.minishinobi/config.json`.
+
+### CLI commands
+
+```bash
+minishinobi deploy <git-repo-url> [--ref refs/heads/main] [--no-follow]
+minishinobi apps
+minishinobi logs <project> [--deployment-id <id>]
+minishinobi restart <project>
+minishinobi stop <project>
+minishinobi remove <project>
+```
+
+### Environment overrides
+
+- `MINISHINOBI_HOST`: override server URL from config
+- `MINISHINOBI_SECRET`: optional secret sent as `x-minishinobi-secret` header
+
+### Typical workflow
+
+1. `minishinobi deploy https://github.com/user/project`
+2. `minishinobi apps`
+3. `minishinobi logs project`
+4. `minishinobi restart project` (or `stop` / `remove`)
 
 ---
 
@@ -761,5 +866,9 @@ This project is open source under the [MIT License](LICENSE).
   <sub>Built with ❤️ by bhaumic <br />on a Snapdragon 660 · 4 GB RAM · PixelExperience Android 13</sub><br />
   <sub>Zero native compilation: sql.js + session-file-store + child_process (built-in)</sub>
 </p>
+
+
+
+
 
 
