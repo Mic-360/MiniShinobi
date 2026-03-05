@@ -1,0 +1,19 @@
+﻿{
+  "name": "minishinobi-cli",
+  "version": "1.0.0",
+  "description": "CLI for controlling MiniShinobi deployments and apps",
+  "main": "index.js",
+  "bin": {
+    "minishinobi": "./index.js"
+  },
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "axios": "^1.13.6",
+    "chalk": "^4.1.2",
+    "cli-table3": "^0.6.5",
+    "commander": "^12.1.0"
+  }
+}
