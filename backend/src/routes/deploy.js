@@ -1,6 +1,7 @@
-﻿const crypto = require('crypto');
+const crypto = require('crypto');
 const express = require('express');
 const deployer = require('../deployer');
+const { projectNameFromRepoUrl } = require('../services/gitManager');
 
 const router = express.Router();
 
@@ -11,7 +12,7 @@ function safeCompare(a, b) {
   return crypto.timingSafeEqual(aBuf, bBuf);
 }
 
-function validateSignature(req) {
+function validateWebhookSignature(req) {
   const secret = process.env.WEBHOOK_SECRET;
   if (!secret) return false;
 
@@ -23,23 +24,54 @@ function validateSignature(req) {
   return safeCompare(String(provided), digest);
 }
 
+function validateCliSecret(req) {
+  const secret = process.env.WEBHOOK_SECRET;
+  if (!secret) return true;
+
+  const provided = req.headers['x-minishinobi-secret'];
+  if (!provided) return false;
+  return safeCompare(String(provided), secret);
+}
+
 router.post('/', async (req, res) => {
   try {
-    if (!validateSignature(req)) {
-      return res.status(401).json({ error: 'Invalid webhook signature' });
-    }
-
-    const repoUrl = req.body?.repository?.clone_url;
+    const webhookRepoUrl = req.body?.repository?.clone_url;
+    const cliRepoUrl = req.body?.repo;
     const ref = req.body?.ref || 'refs/heads/main';
 
-    if (!repoUrl) {
-      return res.status(400).json({ error: 'repository.clone_url is required' });
+    if (webhookRepoUrl) {
+      if (!validateWebhookSignature(req)) {
+        return res.status(401).json({ error: 'Invalid webhook signature' });
+      }
+
+      const deploymentId = await deployer.queueWebhookDeploy({ repoUrl: webhookRepoUrl, ref });
+      return res.status(202).json({
+        deploymentId,
+        project: projectNameFromRepoUrl(webhookRepoUrl),
+        status: 'queued',
+        mode: 'webhook',
+      });
     }
 
-    const deploymentId = await deployer.queueWebhookDeploy({ repoUrl, ref });
-    res.status(202).json({ deploymentId, status: 'queued' });
+    if (cliRepoUrl) {
+      if (!validateCliSecret(req)) {
+        return res.status(401).json({ error: 'Invalid CLI secret' });
+      }
+
+      const deploymentId = await deployer.queueWebhookDeploy({ repoUrl: cliRepoUrl, ref });
+      return res.status(202).json({
+        deploymentId,
+        project: projectNameFromRepoUrl(cliRepoUrl),
+        status: 'queued',
+        mode: 'cli',
+      });
+    }
+
+    return res.status(400).json({
+      error: 'Missing repository URL. Provide repository.clone_url (webhook) or repo (CLI).',
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 });
 
