@@ -32,6 +32,14 @@ function ensureSitesDirectory() {
   fs.mkdirSync(NGINX_SITES_ENABLED_DIR, { recursive: true });
 }
 
+async function reloadNginx(onLog = () => {}) {
+  await runCommand({
+    command: NGINX_RELOAD_CMD,
+    cwd: ROOT_DIR,
+    onLog,
+  });
+}
+
 async function upsertProjectRoute({ projectName, host, port, onLog = () => {} }) {
   ensureSitesDirectory();
   const filePath = path.join(NGINX_SITES_ENABLED_DIR, `${projectName}.conf`);
@@ -43,11 +51,7 @@ async function upsertProjectRoute({ projectName, host, port, onLog = () => {} })
   if (changed) {
     fs.writeFileSync(filePath, nextContent);
     onLog('system', `Wrote nginx config: ${filePath}`);
-    await runCommand({
-      command: NGINX_RELOAD_CMD,
-      cwd: ROOT_DIR,
-      onLog,
-    });
+    await reloadNginx(onLog);
   } else {
     onLog('system', `Nginx config unchanged for ${projectName}`);
   }
@@ -55,10 +59,27 @@ async function upsertProjectRoute({ projectName, host, port, onLog = () => {} })
   return { filePath, changed };
 }
 
+async function removeProjectRoute({ projectName, onLog = () => {} }) {
+  ensureSitesDirectory();
+  const filePath = path.join(NGINX_SITES_ENABLED_DIR, `${projectName}.conf`);
+
+  if (!fs.existsSync(filePath)) {
+    onLog('system', `No nginx config found for ${projectName}`);
+    return { filePath, removed: false };
+  }
+
+  fs.rmSync(filePath, { force: true });
+  onLog('system', `Removed nginx config: ${filePath}`);
+  await reloadNginx(onLog);
+  return { filePath, removed: true };
+}
+
 module.exports = {
   NGINX_SITES_ENABLED_DIR,
   NGINX_RELOAD_CMD,
   renderSiteConfig,
   ensureSitesDirectory,
+  reloadNginx,
   upsertProjectRoute,
+  removeProjectRoute,
 };

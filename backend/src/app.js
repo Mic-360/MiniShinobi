@@ -96,6 +96,8 @@ app.use('/deploy', require('./routes/deploy'));
 app.use('/auth', require('./routes/auth'));
 app.use('/api/projects', require('./routes/projects'));
 app.use('/api/deployments', require('./routes/deployments'));
+app.use('/apps', require('./routes/apps'));
+app.use('/logs', require('./routes/logs'));
 app.get('/health', (_req, res) => res.json({ ok: true, ts: Date.now() }));
 
 // Serve built React frontend
