@@ -1,4 +1,4 @@
-﻿<p align="center">
+<p align="center">
   <img src="frontend/public/mini-shinobi.png" alt="MiniShinobi" width="220" />
 </p>
 
@@ -276,6 +276,9 @@ All backend configuration is done via `backend/.env`. The server will not start 
 | `WEBHOOK_SECRET`          | **Yes**  | —                                    | HMAC-SHA256 secret shared with GitHub (or any webhook source). Used to verify `POST /deploy` requests                                                                                    |
 | `APP_PORT_START`          | No       | `5000`                               | Start of the port range for deployed app processes                                                                                                                                       |
 | `APP_PORT_END`            | No       | `5999`                               | End of the port range. MiniShinobi scans this range and picks the first free port                                                                                                        |
+| `BUILD_COMMAND_TIMEOUT_MS`| No       | `1800000`                            | Hard timeout (milliseconds) for each build command (`npm install`, `npm run build`, etc). Prevents infinite hangs                                                                       |
+| `BUILD_IDLE_TIMEOUT_MS`   | No       | `600000`                             | Kills a build command if it produces no stdout/stderr for this long (milliseconds)                                                                                                       |
+| `BUILD_HEARTBEAT_MS`      | No       | `20000`                              | Interval (milliseconds) for "command still running" log messages during long builds                                                                                                      |
 
 ### Example `.env`
 
@@ -299,6 +302,9 @@ WEBHOOK_SECRET=another-long-random-string
 
 APP_PORT_START=5000
 APP_PORT_END=5999
+BUILD_COMMAND_TIMEOUT_MS=1800000
+BUILD_IDLE_TIMEOUT_MS=600000
+BUILD_HEARTBEAT_MS=20000
 ```
 
 ### Creating a GitHub OAuth App
@@ -759,6 +765,15 @@ MiniShinobi/
 - Common causes: missing dependencies, incorrect build command, or not enough memory for the build
 - Override commands using `.minishinobi.json` in your repo root
 - Verify the project's `branch` is correct
+
+### Build appears stuck at `npm install && npm run build`
+
+- MiniShinobi now logs heartbeat lines during long commands and auto-terminates stuck commands.
+- Tune these in `backend/.env`: `BUILD_COMMAND_TIMEOUT_MS`, `BUILD_IDLE_TIMEOUT_MS`, `BUILD_HEARTBEAT_MS`.
+- For low-end devices, set a larger timeout (example: `BUILD_COMMAND_TIMEOUT_MS=3600000`).
+- If it keeps stalling, run manually inside the app folder:
+  `cd apps/<project> && npm install --no-audit --no-fund && npm run build`
+- If manual install is also slow, the issue is host network/registry access, not the deployment queue.
 
 ### Process crashes after deploying
 
