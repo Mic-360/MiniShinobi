@@ -11,7 +11,7 @@ export function Layout({ children, title, subtitle }) {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 8);
+      setIsScrolled(window.scrollY > 10);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -29,85 +29,82 @@ export function Layout({ children, title, subtitle }) {
     location.pathname.startsWith('/deployment');
 
   return (
-    <div className='flex flex-col min-h-screen bg-gradient-to-br from-bg-primary to-[#0a0e15]'>
+    <div className='flex flex-col min-h-screen bg-[#09090b] text-zinc-400'>
       <header
-        className={`sticky top-0 z-40 border-b border-bg-tertiary bg-black/85 backdrop-blur-xl transition-all duration-250 ${isScrolled ? 'shadow-lg border-bg-hover' : ''}`}
+        className={`sticky top-0 z-40 bg-[#09090b] border-b border-zinc-800 transition-colors ${isScrolled ? 'bg-[#09090b]/80 backdrop-blur-md' : ''
+          }`}
       >
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4'>
-          <div className='flex items-center justify-between gap-3 sm:gap-8'>
+        <div className='max-w-6xl mx-auto px-6 h-14 flex items-center justify-between gap-4'>
+          <div className='flex items-center gap-8'>
             <Link
               to='/dashboard'
-              className='flex items-center gap-2 sm:gap-3 font-display text-lg sm:text-xl font-bold text-text-primary hover:text-sage transition-colors min-w-0'
+              className='flex items-center gap-2.5 hover:opacity-80 transition-opacity'
             >
               <img
                 src='/mini-shinobi.png'
                 alt='MiniShinobi'
-                className='h-8 w-8 sm:h-9 sm:w-9 object-contain flex-shrink-0'
+                className='h-6 w-6 object-contain'
               />
-              <span className='truncate'>MiniShinobi</span>
+              <span className='font-semibold text-white tracking-tight'>MiniShinobi</span>
             </Link>
 
             {user && isDashboard && (
-              <nav className='hidden sm:flex gap-8'>
+              <nav className='flex items-center gap-6'>
                 <Link
                   to='/dashboard'
-                  className={`font-medium transition-colors duration-150 relative text-sm ${location.pathname === '/dashboard' ? 'text-sage' : 'text-text-secondary hover:text-text-primary'}`}
+                  className={`text-sm font-medium transition-colors ${location.pathname === '/dashboard'
+                      ? 'text-white'
+                      : 'text-zinc-500 hover:text-zinc-300'
+                    }`}
                 >
-                  Projects
-                  {location.pathname === '/dashboard' && (
-                    <span className='absolute bottom-0 left-0 right-0 h-0.5 bg-sage'></span>
-                  )}
+                  Dashboard
                 </Link>
               </nav>
             )}
-
-            {user && (
-              <div className='flex items-center gap-3 sm:gap-6 ml-auto'>
-                <div className='flex items-center'>
-                  <img
-                    src={user.avatar_url}
-                    alt={user.username}
-                    className='w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-sage-wash hover:border-sage transition-colors cursor-pointer shadow-sage'
-                    title={user.username}
-                  />
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className='hidden sm:block px-4 sm:px-5 py-2 bg-transparent text-text-secondary border border-text-tertiary rounded-lg font-medium text-xs sm:text-sm hover:text-text-primary hover:border-sage hover:bg-sage-wash transition-all duration-150'
-                >
-                  Sign out
-                </button>
-              </div>
-            )}
           </div>
+
+          {user && (
+            <div className='flex items-center gap-4'>
+              <div className='flex items-center gap-3'>
+                <span className='text-xs text-zinc-500 hidden sm:inline-block'>{user.username}</span>
+                <img
+                  src={user.avatar_url}
+                  alt={user.username}
+                  className='w-7 h-7 rounded-full border border-zinc-800'
+                />
+              </div>
+              <button
+                onClick={handleLogout}
+                className='text-xs font-medium text-zinc-500 hover:text-white transition-colors py-1.5 px-3 border border-zinc-800 rounded-md hover:bg-zinc-800/50'
+              >
+                Sign out
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
-      <main className='flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8'>
+      <main className='flex-1 w-full max-w-6xl mx-auto px-6 py-10'>
         {title && (
-          <section className='mb-8 sm:mb-12 animate-slide-down'>
-            <div className='flex items-start justify-between gap-4 sm:gap-8'>
-              <div>
-                <h1 className='text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-text-primary to-sage bg-clip-text text-transparent mb-2'>
-                  {title}
-                </h1>
-                {subtitle && (
-                  <p className='text-text-secondary text-sm sm:text-base lg:text-lg'>
-                    {subtitle}
-                  </p>
-                )}
-              </div>
-            </div>
-          </section>
+          <div className='mb-10'>
+            <h1 className='text-2xl font-semibold text-white mb-2'>{title}</h1>
+            {subtitle && (
+              <p className='text-sm text-zinc-500 max-w-2xl'>{subtitle}</p>
+            )}
+          </div>
         )}
         {children}
       </main>
 
-      <footer className='border-t border-bg-tertiary bg-black/60 py-6 sm:py-8 mt-auto'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 text-center'>
-          <p className='text-text-tertiary text-xs sm:text-sm'>
+      <footer className='border-t border-zinc-900 bg-black/20 py-8 mt-auto'>
+        <div className='max-w-6xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4'>
+          <p className='text-zinc-600 text-xs'>
             © 2026 MiniShinobi · Self-hosted micro-PaaS
           </p>
+          <div className='flex items-center gap-6'>
+            <a href='#' className='text-zinc-600 hover:text-zinc-400 text-xs transition-colors'>Documentation</a>
+            <a href='#' className='text-zinc-600 hover:text-zinc-400 text-xs transition-colors'>Support</a>
+          </div>
         </div>
       </footer>
     </div>
