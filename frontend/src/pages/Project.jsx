@@ -20,116 +20,108 @@ export default function Project() {
 
   const handleDeploy = async () => {
     setDeploying(true);
-    await triggerDeploy(id);
-    await load();
-    setDeploying(false);
+    try {
+      await triggerDeploy(id);
+      await load();
+    } finally {
+      setDeploying(false);
+    }
   };
 
   return (
     <Layout>
-      <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8'>
-        <div className='w-full'>
-          <div className='flex items-center gap-2 mb-1 text-xs sm:text-sm flex-wrap'>
-            <Link
-              to='/dashboard'
-              className='font-medium text-zinc-400 hover:text-white transition-colors'
-            >
-              Projects
-            </Link>
-            <span className='text-zinc-600'>/</span>
-            <span className='font-medium text-zinc-100 truncate'>
-              Project #{id}
-            </span>
-          </div>
-          <h1 className='text-xl sm:text-2xl font-semibold tracking-tight text-white'>
+      <div className="mb-8">
+        <div className='flex items-center gap-2 mb-2 text-sm'>
+          <Link
+            to='/dashboard'
+            className='text-zinc-500 hover:text-zinc-300 transition-colors flex items-center gap-1'
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Projects
+          </Link>
+          <span className='text-zinc-700'>/</span>
+          <span className='text-zinc-300'>Project #{id}</span>
+        </div>
+
+        <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4'>
+          <h1 className='text-2xl font-semibold text-white'>
             Deployments
           </h1>
+          <Button
+            onClick={handleDeploy}
+            disabled={deploying}
+            className='w-full sm:w-auto px-4'
+          >
+            {deploying ? 'Queuing...' : 'Deploy Now'}
+          </Button>
         </div>
-        <Button
-          onClick={handleDeploy}
-          disabled={deploying}
-          className='w-full sm:w-auto'
-        >
-          {deploying ? 'Queuing...' : 'Deploy Now'}
-        </Button>
       </div>
 
-      <div className='bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-sm'>
+      <div className='border border-zinc-800 rounded-lg bg-zinc-900/40 overflow-hidden'>
         {deps.length === 0 ? (
-          <div className='p-10 flex flex-col items-center justify-center text-center'>
-            <p className='text-sm text-zinc-400'>
-              No deployments yet. Trigger a deployment to get started.
+          <div className='py-20 flex flex-col items-center justify-center text-center'>
+            <div className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-500 mb-3">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+            </div>
+            <p className='text-sm text-zinc-500'>
+              No deployments yet.
             </p>
           </div>
         ) : (
-          <div className='divide-y divide-zinc-800/80'>
-            {deps.map((d, i) => (
+          <div className="divide-y divide-zinc-800">
+            {deps.map((d) => (
               <Link
                 key={d.id}
                 to={`/deployment/${d.id}`}
-                className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 px-5 hover:bg-zinc-800/30 transition-colors ${i === 0 ? 'bg-zinc-800/20' : ''}`}
+                className="block hover:bg-zinc-800/10 transition-colors"
               >
-                <div className='flex items-start gap-4 flex-1 min-w-0'>
-                  <div className='mt-1'>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 px-5 gap-4">
+                  <div className='flex items-start gap-4 flex-1 min-w-0'>
                     <Badge status={d.status} />
-                  </div>
-                  <div className='flex-1 min-w-0 flex flex-col justify-center'>
-                    <div className='flex items-center gap-2'>
-                      <span className='font-mono text-[13px] text-zinc-100 font-medium'>
-                        #{d.id}
-                      </span>
-                      <span className='text-zinc-600'>·</span>
-                      {d.commit_sha ? (
-                        <span className='font-mono text-[12px] text-zinc-400 bg-zinc-800/50 px-1.5 py-0.5 rounded'>
-                          {d.commit_sha}
+                    <div className='flex-1 min-w-0 flex flex-col gap-0.5'>
+                      <div className='flex items-center gap-2'>
+                        <span className='font-mono text-sm text-zinc-300'>
+                          #{d.id}
                         </span>
-                      ) : (
-                        <span className='text-[12px] text-zinc-500 italic'>
-                          Processing commit...
-                        </span>
-                      )}
+                        {d.commit_sha && (
+                          <>
+                            <span className='text-zinc-700'>·</span>
+                            <span className='font-mono text-xs text-zinc-500'>
+                              {d.commit_sha.substring(0, 7)}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                      <p className='text-sm text-zinc-400 truncate'>
+                        {d.commit_msg || 'Manual deployment triggered'}
+                      </p>
                     </div>
-                    <p className='text-[13px] text-zinc-400 mt-1 line-clamp-1 truncate pr-4'>
-                      {d.commit_msg || 'Triggered manual deployment'}
-                    </p>
                   </div>
-                </div>
 
-                <div className='mt-3 sm:mt-0 sm:ml-4 flex items-center justify-between sm:justify-end w-full sm:w-auto gap-6 sm:gap-4'>
-                  {d.tunnel_url && (
-                    <a
-                      href={d.tunnel_url}
-                      target='_blank'
-                      rel='noreferrer'
-                      onClick={(e) => e.stopPropagation()}
-                      className='text-[12px] text-zinc-400 hover:text-white transition-colors flex items-center gap-1.5 bg-zinc-950 border border-zinc-800/80 hover:border-zinc-700 py-1 px-2.5 rounded-full truncate max-w-[220px]'
-                    >
-                      <svg
-                        className='w-3 h-3 shrink-0'
-                        fill='none'
-                        viewBox='0 0 24 24'
-                        stroke='currentColor'
-                      >
-                        <path
-                          strokeLinecap='round'
-                          strokeLinejoin='round'
-                          strokeWidth='2'
-                          d='M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14'
-                        />
-                      </svg>
-                      <span className='truncate'>
+                  <div className='flex items-center gap-6 text-xs text-zinc-500 font-mono'>
+                    {d.tunnel_url && (
+                      <span className='hidden lg:inline-block'>
                         {d.tunnel_url.replace('https://', '')}
                       </span>
-                    </a>
-                  )}
-                  <span className='text-[12px] text-zinc-500 font-medium whitespace-nowrap ml-auto sm:ml-0'>
-                    {new Date(
-                      d.started_at || d.created_at || Date.now(),
-                    ).toLocaleDateString(undefined, {
-                      month: 'short',
-                      day: 'numeric',
-                    })}
-                  </span>
+                    )}
+                    <span className='whitespace-nowrap'>
+                      {new Date(
+                        d.started_at || d.created_at || Date.now(),
+                      ).toLocaleDateString(undefined, {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </span>
+                    <svg className="w-4 h-4 text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
                 </div>
               </Link>
             ))}
