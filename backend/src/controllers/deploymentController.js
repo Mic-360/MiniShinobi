@@ -100,25 +100,39 @@ function deploymentLogger(deploymentId, onLog) {
   return (stream, message) => onLog(deploymentId, stream, message);
 }
 
+function normalizeRepoUrl(url) {
+  return String(url || '').toLowerCase().trim().replace(/\.git$/i, '');
+}
+
 async function createWebhookDeployment({ repoUrl, ref }) {
   if (!repoUrl) throw new Error('repository.clone_url is required');
 
   const branch = parseBranch(ref, 'main');
-  const user = ensureSystemUser();
-  const projectName = projectNameFromRepoUrl(repoUrl);
-  const slug = sanitizeProjectName(projectName);
+  const normalizedIncoming = normalizeRepoUrl(repoUrl);
 
-  let project = db.prepare('SELECT * FROM projects WHERE user_id = ? AND slug = ?').get(user.id, slug);
+  // Search across all projects for a matching normalized URL
+  const allProjects = db.prepare('SELECT * FROM projects').all();
+  let project = allProjects.find(p => normalizeRepoUrl(p.repo_url) === normalizedIncoming);
 
   if (!project) {
-    const { lastInsertRowid } = db.prepare(
-      `INSERT INTO projects
-        (user_id, name, slug, repo_url, branch, install_command, build_command, output_dir, start_command, framework)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).run(user.id, projectName, slug, repoUrl, branch, 'npm install', 'npm run build', null, null, null);
+    const user = ensureSystemUser();
+    const projectName = projectNameFromRepoUrl(repoUrl);
+    const slug = sanitizeProjectName(projectName);
 
-    project = db.prepare('SELECT * FROM projects WHERE id = ?').get(lastInsertRowid);
+    // Fallback: search by slug for system user
+    project = db.prepare('SELECT * FROM projects WHERE user_id = ? AND slug = ?').get(user.id, slug);
+
+    if (!project) {
+      const { lastInsertRowid } = db.prepare(
+        `INSERT INTO projects
+          (user_id, name, slug, repo_url, branch, install_command, build_command, output_dir, start_command, framework)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ).run(user.id, projectName, slug, repoUrl, branch, 'npm install', 'npm run build', null, null, null);
+
+      project = db.prepare('SELECT * FROM projects WHERE id = ?').get(lastInsertRowid);
+    }
   } else {
+    // If found, ensure we use the incoming branch for this specific webhook trigger
     db.prepare('UPDATE projects SET repo_url = ?, branch = ? WHERE id = ?').run(repoUrl, branch, project.id);
     project = db.prepare('SELECT * FROM projects WHERE id = ?').get(project.id);
   }
