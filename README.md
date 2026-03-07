@@ -200,6 +200,8 @@ cloudflared tunnel login
 cloudflared tunnel create minishinobi-dashboard
 ```
 
+This is one-time setup. MiniShinobi reuses a single tunnel and does not create a new Cloudflare Tunnel per deployment.
+
 Copy the credentials file UUID printed by the command. You'll need it in the next step.
 
 ### 8. Configure the Cloudflare Tunnel
@@ -272,6 +274,7 @@ All backend configuration is done via `backend/.env`. The server will not start 
 | `RUNTIME_DIR`             | No       | `<project-root>/runtime`             | Root of the runtime metadata directory. Contains `projects.json` and `logs/`                                                                                                             |
 | `BASE_DOMAIN`             | No       | `minishinobi.dev`                    | Subdomain suffix for deployed apps. If set to `yourdomain.com`, a project named `blog` becomes `blog.yourdomain.com`                                                                     |
 | `NGINX_SITES_ENABLED_DIR` | No       | `<project-root>/nginx/sites-enabled` | Where generated per-project Nginx `.conf` files are written                                                                                                                              |
+| `NGINX_LISTEN_PORT`       | No       | `4000`                               | Port used by generated app vhost server blocks. Must match the local Nginx listener your tunnel points to (Termux default in this repo is `4000`)                                     |
 | `NGINX_RELOAD_CMD`        | No       | `nginx -s reload`                    | Command to reload Nginx after a vhost config changes                                                                                                                                     |
 | `WEBHOOK_SECRET`          | **Yes**  | —                                    | HMAC-SHA256 secret shared with GitHub (or any webhook source). Used to verify `POST /deploy` requests                                                                                    |
 | `APP_PORT_START`          | No       | `5000`                               | Start of the port range for deployed app processes                                                                                                                                       |

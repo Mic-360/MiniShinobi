@@ -5,11 +5,12 @@ const { runCommand } = require('./buildRunner');
 const ROOT_DIR = path.join(__dirname, '../../..');
 const NGINX_SITES_ENABLED_DIR = process.env.NGINX_SITES_ENABLED_DIR || path.join(ROOT_DIR, 'nginx', 'sites-enabled');
 const NGINX_RELOAD_CMD = process.env.NGINX_RELOAD_CMD || 'nginx -s reload';
+const NGINX_LISTEN_PORT = Number(process.env.NGINX_LISTEN_PORT || '4000');
 
 function renderSiteConfig({ host, port }) {
   return [
     'server {',
-    '    listen 80;',
+    `    listen ${NGINX_LISTEN_PORT};`,
     `    server_name ${host};`,
     '',
     '    location / {',
@@ -77,6 +78,7 @@ async function removeProjectRoute({ projectName, onLog = () => {} }) {
 module.exports = {
   NGINX_SITES_ENABLED_DIR,
   NGINX_RELOAD_CMD,
+  NGINX_LISTEN_PORT,
   renderSiteConfig,
   ensureSitesDirectory,
   reloadNginx,
