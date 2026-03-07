@@ -16,7 +16,7 @@ function projectNameFromRepoUrl(repoUrl) {
   return sanitizeProjectName(lastPart);
 }
 
-function runGit(args, cwd, onLog = () => {}) {
+function runGit(args, cwd, onLog = () => { }) {
   return new Promise((resolve, reject) => {
     onLog('system', `$ git ${args.join(' ')}`);
     const proc = spawn('git', args, { cwd, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -57,8 +57,9 @@ async function ensureRepo({ appsDir, projectName, repoUrl, branch, onLog }) {
   } else {
     onLog('system', `Updating existing repository at ${projectPath}`);
     await runGit(['fetch', '--all', '--prune'], projectPath, onLog);
+    await runGit(['reset', '--hard', `origin/${branch}`], projectPath, onLog);
+    await runGit(['clean', '-fd'], projectPath, onLog);
     await runGit(['checkout', branch], projectPath, onLog);
-    await runGit(['pull', 'origin', branch], projectPath, onLog);
   }
 
   return projectPath;
