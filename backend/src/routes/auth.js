@@ -1,10 +1,11 @@
-const express  = require('express');
+﻿const express = require('express');
 const passport = require('passport');
-const router   = express.Router();
+const router = express.Router();
 require('dotenv').config({ path: require('path').join(__dirname, '../../.env') });
 
+// Requires broader scopes so MiniShinobi can list repositories and manage repository webhooks.
 router.get('/github',
-  passport.authenticate('github', { scope: ['read:user'] })
+  passport.authenticate('github', { scope: ['read:user', 'repo', 'admin:repo_hook'] })
 );
 
 router.get('/github/callback',

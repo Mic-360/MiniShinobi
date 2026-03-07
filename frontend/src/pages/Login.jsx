@@ -1,37 +1,58 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/Button';
 
 export default function Login() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  useEffect(() => { if (user) navigate('/dashboard'); }, [user, navigate]);
+
+  useEffect(() => {
+    if (user) navigate('/dashboard');
+  }, [user, navigate]);
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4 selection:bg-zinc-800">
-      <div className="w-full max-w-sm flex flex-col items-center gap-8">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-14 w-14 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center shadow-sm overflow-hidden">
-            <img src="/mini-shinobi.png" alt="MiniShinobi" className="h-10 w-10 object-contain" />
+    <div className='flex items-center justify-center min-h-screen px-4 bg-[#09090b] text-zinc-400 selection:bg-zinc-800'>
+      <div className='w-full max-w-sm'>
+        <div className='bg-zinc-900/40 border border-zinc-800 rounded-lg p-10 text-center shadow-xl'>
+          {/* Header */}
+          <div className='mb-8'>
+            <img
+              src='/mini-shinobi.png'
+              alt='MiniShinobi'
+              className='inline-block h-12 w-12 mb-4'
+            />
+            <h1 className='text-xl font-semibold text-white mb-2 leading-tight uppercase tracking-wider text-[12px] text-zinc-500'>
+              Sign in to MiniShinobi
+            </h1>
           </div>
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">MiniShinobi</h1>
-          <p className="text-zinc-500 text-sm text-center">
-            Edge infrastructure from your pocket.<br />Deploy from Android.
-          </p>
-        </div>
 
-        <div className="w-full bg-zinc-900/50 border border-zinc-800/80 rounded-2xl p-6 shadow-sm">
           <Button
-            variant="primary"
-            className="w-full h-10 text-sm gap-2"
-            onClick={() => window.location.href = '/auth/github'}
+            onClick={() => (window.location.href = '/auth/github')}
+            className='w-full h-12 px-6 flex items-center justify-center gap-3 active:scale-95 transition-transform'
           >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.63-5.37-12-12-12z" />
+            <svg
+              className='w-5 h-5'
+              fill='currentColor'
+              viewBox='0 0 24 24'
+            >
+              <path d='M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.63-5.37-12-12-12z' />
             </svg>
             Continue with GitHub
           </Button>
+
+          {/* Footer */}
+          <div className='mt-8 pt-8 border-t border-zinc-800'>
+            <p className='text-[10px] uppercase font-bold text-zinc-600 tracking-widest'>
+              Micro-PaaS · Home Lab Edition
+            </p>
+          </div>
+        </div>
+
+        <div className='mt-6 text-center'>
+          <Link to='/' className='text-xs text-zinc-600 hover:text-white transition-colors'>
+            ← Back to landing
+          </Link>
         </div>
       </div>
     </div>

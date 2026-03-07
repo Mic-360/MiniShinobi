@@ -1,8 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import Login      from './pages/Login';
-import Dashboard  from './pages/Dashboard';
-import Project    from './pages/Project';
+import Login from './pages/Login';
+import Landing from './pages/Landing';
+import Dashboard from './pages/Dashboard';
+import Project from './pages/Project';
 import Deployment from './pages/Deployment';
 
 function Private({ children }) {
@@ -18,9 +19,10 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/"               element={<Login />} />
-          <Route path="/dashboard"      element={<Private><Dashboard /></Private>} />
-          <Route path="/project/:id"    element={<Private><Project /></Private>} />
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={<Private><Dashboard /></Private>} />
+          <Route path="/project/:id" element={<Private><Project /></Private>} />
           <Route path="/deployment/:id" element={<Private><Deployment /></Private>} />
         </Routes>
       </BrowserRouter>
