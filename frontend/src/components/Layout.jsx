@@ -344,20 +344,24 @@ export function Layout({
                   alt='MiniShinobi'
                   className='h-5 w-5'
                 />
-                <span className='font-semibold text-white'>MiniShinobi</span>
+                <span className='font-semibold text-[var(--text-primary)]'>
+                  MiniShinobi
+                </span>
               </div>
-              <p className='text-sm text-[#A8B5AE]'>
+              <p className='text-sm text-[var(--text-secondary)]'>
                 Decentralized edge computing for developers.
               </p>
             </div>
 
             <div>
-              <h4 className='font-semibold text-white mb-4'>Product</h4>
-              <ul className='space-y-2 text-sm text-[#A8B5AE]'>
+              <h4 className='mb-4 font-semibold text-[var(--text-primary)]'>
+                Product
+              </h4>
+              <ul className='space-y-2 text-sm text-[var(--text-secondary)]'>
                 <li>
                   <a
                     href='/#features'
-                    className='hover:text-[#9CAF88] transition-colors'
+                    className='transition-colors hover:text-[var(--text-primary)]'
                   >
                     Features
                   </a>
@@ -365,99 +369,55 @@ export function Layout({
                 <li>
                   <a
                     href='/#how-it-works'
-                    className='hover:text-[#9CAF88] transition-colors'
+                    className='transition-colors hover:text-[var(--text-primary)]'
                   >
                     How it Works
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href='#'
-                    className='hover:text-[#9CAF88] transition-colors'
-                  >
-                    Pricing
                   </a>
                 </li>
               </ul>
             </div>
 
             <div>
-              <h4 className='font-semibold text-white mb-4'>Resources</h4>
-              <ul className='space-y-2 text-sm text-[#A8B5AE]'>
+              <h4 className='mb-4 font-semibold text-[var(--text-primary)]'>
+                Resources
+              </h4>
+              <ul className='space-y-2 text-sm text-[var(--text-secondary)]'>
                 <li>
                   <a
                     href='#'
-                    className='hover:text-[#9CAF88] transition-colors'
+                    className='transition-colors hover:text-[var(--text-primary)]'
                   >
                     Documentation
                   </a>
                 </li>
                 <li>
                   <a
-                    href='#'
-                    className='hover:text-[#9CAF88] transition-colors'
+                    href='https://github.com/Mic-360/MiniShinobi'
+                    className='transition-colors hover:text-[var(--text-primary)]'
                   >
                     GitHub
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href='#'
-                    className='hover:text-[#9CAF88] transition-colors'
-                  >
-                    Community
                   </a>
                 </li>
               </ul>
             </div>
 
             <div>
-              <h4 className='font-semibold text-white mb-4'>Connect</h4>
-              <ul className='space-y-2 text-sm text-[#A8B5AE]'>
-                <li>
-                  <a
-                    href='#'
-                    className='hover:text-[#9CAF88] transition-colors'
-                  >
-                    Twitter
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href='#'
-                    className='hover:text-[#9CAF88] transition-colors'
-                  >
-                    Discord
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href='#'
-                    className='hover:text-[#9CAF88] transition-colors'
-                  >
-                    Email
-                  </a>
-                </li>
+              <h4 className='mb-4 font-semibold text-[var(--text-primary)]'>
+                Built for
+              </h4>
+              <ul className='space-y-2 text-sm text-[var(--text-secondary)]'>
+                <li>Home labs</li>
+                <li>Indie teams</li>
+                <li>Edge-native builders</li>
               </ul>
             </div>
           </div>
 
-          <div className='border-t border-[#1F2A24] pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-[#A8B5AE]'>
+          <div className='flex flex-col items-center justify-between border-t border-[var(--border)] pt-8 text-sm text-[var(--text-secondary)] md:flex-row'>
             <p>© 2026 MiniShinobi. All rights reserved.</p>
-            <div className='flex gap-6 mt-4 md:mt-0'>
-              <a
-                href='#'
-                className='hover:text-[#9CAF88] transition-colors'
-              >
-                Privacy
-              </a>
-              <a
-                href='#'
-                className='hover:text-[#9CAF88] transition-colors'
-              >
-                Terms
-              </a>
-            </div>
+            <p className='mt-4 text-xs text-[var(--text-muted)] md:mt-0'>
+              Calm power. Invisible complexity.
+            </p>
           </div>
         </div>
       </footer>
