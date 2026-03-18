@@ -1,11 +1,12 @@
 import { motion as Motion } from 'framer-motion';
 import {
   ArrowRight,
-  ChevronRight,
+  CheckCircle2,
   Code,
   GitBranch,
   Globe,
   Lock,
+  ServerCog,
   Smartphone,
   Zap,
 } from 'lucide-react';
@@ -13,7 +14,12 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '../components/Layout';
 import { Button } from '../components/ui/Button';
-import { Safari } from '../components/ui/Safari';
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '../components/ui/Card';
 import { useAuth } from '../context/AuthContext';
 
 const fadeInUp = {
@@ -100,90 +106,99 @@ export default function Landing() {
   }, [user, navigate]);
 
   return (
-    <Layout>
-      <div
-        className='relative text-white overflow-hidden'
-        style={{
-          '--sage-green': '#9CAF88',
-          '--surface': '#121715',
-          '--border': '#1F2A24',
-        }}
-      >
-        {/* Animated background gradient */}
-        <div className='absolute inset-0 overflow-hidden pointer-events-none'>
-          <div className='absolute -top-1/2 right-0 w-200 h-200 rounded-full bg-[#9CAF88]/5 blur-[120px]' />
-          <div className='absolute -bottom-1/4 left-1/4 w-150 h-150 rounded-full bg-[#9CAF88]/3 blur-[100px]' />
+    <Layout variant='landing'>
+      <div className='relative overflow-hidden'>
+        <div className='pointer-events-none absolute inset-0'>
+          <div className='absolute -top-24 -right-45 h-130 w-130 rounded-full bg-(--accent)/12 blur-[130px]' />
+          <div className='absolute -bottom-45 -left-35 h-105 w-105 rounded-full bg-(--accent)/9 blur-[120px]' />
         </div>
 
-        {/* Hero Section */}
-        <section className='relative pt-32 pb-24 px-6'>
+        <section className='relative px-6 pb-20 pt-28 md:pt-32'>
           <div className='max-w-5xl mx-auto'>
             <Motion.div
               variants={staggerContainer}
               initial='initial'
               animate='animate'
-              className='space-y-8'
+              className='space-y-9'
             >
-              {/* Badge */}
               <Motion.div
                 variants={fadeInUp}
                 className='inline-flex'
               >
-                <div className='px-3 py-1 rounded-full border border-[#1F2A24] bg-[#121715]/50 backdrop-blur-sm'>
-                  <span className='text-sm text-[#A8B5AE]'>
-                    <span className='inline-block w-2 h-2 rounded-full bg-[#9CAF88] mr-2' />
+                <div className='rounded-full border border-(--border) bg-(--surface)/80 px-3 py-1 backdrop-blur-sm'>
+                  <span className='text-sm text-(--text-secondary)'>
+                    <span className='mr-2 inline-block h-2 w-2 rounded-full bg-(--accent)' />
                     Now in Beta
                   </span>
                 </div>
               </Motion.div>
 
-              {/* Headline */}
               <Motion.h1
                 variants={fadeInUp}
-                className='text-6xl md:text-7xl font-bold tracking-tight leading-[1.1]'
+                className='max-w-4xl text-5xl font-semibold leading-[1.03] tracking-tight md:text-7xl'
               >
-                Your Cloud.
+                Micro‑PaaS for builders
                 <br />
-                <span className='text-[#9CAF88]'>In Your Pocket.</span>
+                <span className='text-(--accent)'>
+                  shipping from edge hardware.
+                </span>
               </Motion.h1>
 
-              {/* Subheadline */}
               <Motion.p
                 variants={fadeInUp}
-                className='text-lg text-[#A8B5AE] max-w-2xl leading-relaxed'
+                className='max-w-2xl text-lg text-(--text-secondary)'
               >
-                Deploy production applications from your Android device.
-                MiniShinobi transforms edge computing from a concept into a
-                practical reality—no data center required, no monthly bills,
-                just your infrastructure on your terms.
+                MiniShinobi deploys production apps through Android compute
+                nodes. Low latency, no lock-in, and a workflow your team already
+                understands.
               </Motion.p>
 
-              {/* CTA Buttons */}
               <Motion.div
                 variants={fadeInUp}
-                className='flex flex-col sm:flex-row gap-4 pt-4'
+                className='flex flex-col gap-4 pt-2 sm:flex-row'
               >
                 <Button
                   onClick={() => (window.location.href = '/auth/github')}
-                  className='bg-[#9CAF88] text-[#0B0F0C] hover:bg-[#a8c29a] font-semibold px-6 py-3 h-12 rounded-lg transition-all inline-flex items-center gap-2'
+                  className='h-11 px-6'
                 >
                   Start Building
                   <ArrowRight className='w-4 h-4' />
                 </Button>
                 <a
                   href='https://github.com/Mic-360/MiniShinobi'
-                  className='px-6 py-3 rounded-lg border border-[#1F2A24] text-[#A8B5AE] hover:bg-[#121715] transition-colors inline-flex items-center gap-2'
+                  className='inline-flex h-11 items-center gap-2 rounded-[10px] border border-(--border) px-5 text-sm font-medium text-(--text-secondary) transition-colors hover:bg-(--surface-muted) hover:text-(--text-primary)'
                 >
                   View on GitHub
-                  <ChevronRight className='w-4 h-4' />
                 </a>
+              </Motion.div>
+
+              <Motion.div
+                variants={fadeInUp}
+                className='grid gap-4 pt-2 sm:grid-cols-3'
+              >
+                {[
+                  ['Deploy latency', '< 4.2s'],
+                  ['Infra control', '100% self-owned'],
+                  ['Usage model', 'Pay $0 for idle'],
+                ].map(([label, value]) => (
+                  <div
+                    key={label}
+                    className='ms-surface px-4 py-3'
+                  >
+                    <p className='text-xs uppercase tracking-[0.12em] text-(--text-muted)'>
+                      {label}
+                    </p>
+                    <p className='mt-1 text-base font-semibold text-(--text-primary)'>
+                      {value}
+                    </p>
+                  </div>
+                ))}
               </Motion.div>
             </Motion.div>
           </div>
         </section>
 
-        {/* Trust Section */}
-        <section className='relative py-20 px-6 border-y border-[#1F2A24]'>
+        <section className='relative border-y border-(--border) px-6 py-16'>
           <div className='max-w-7xl mx-auto'>
             <Motion.div
               initial={{ opacity: 0 }}
@@ -191,18 +206,18 @@ export default function Landing() {
               viewport={{ once: true }}
               className='text-center'
             >
-              <p className='text-sm font-semibold text-[#9CAF88] uppercase tracking-wider'>
+              <p className='text-sm font-semibold uppercase tracking-[0.14em] text-(--accent)'>
                 Built for Developers
               </p>
-              <p className='mt-4 text-[#A8B5AE] text-sm'>
-                Open source. Self-hosted. Community-driven.
+              <p className='mt-4 text-sm text-(--text-secondary)'>
+                Open source, self-hosted, and purpose-built for edge-native
+                teams.
               </p>
             </Motion.div>
           </div>
         </section>
 
-        {/* Product Showcase */}
-        <section className='relative py-24 px-6'>
+        <section className='relative px-6 py-20'>
           <div className='max-w-6xl mx-auto'>
             <Motion.div
               initial={{ opacity: 0 }}
@@ -210,12 +225,12 @@ export default function Landing() {
               viewport={{ once: true }}
               className='mb-12'
             >
-              <h2 className='text-4xl font-bold tracking-tight text-center mb-4'>
-                Your dashboard awaits
+              <h2 className='mb-4 text-center text-4xl font-semibold tracking-tight'>
+                A dashboard made for deep work
               </h2>
-              <p className='text-center text-[#A8B5AE] max-w-2xl mx-auto'>
-                A sleek, intuitive interface to manage your deployments, view
-                logs, and monitor your infrastructure in real-time.
+              <p className='mx-auto max-w-2xl text-center text-(--text-secondary)'>
+                Observe deploy streams, inspect statuses, and control app
+                surfaces with a calm, no-noise workflow.
               </p>
             </Motion.div>
 
@@ -224,21 +239,42 @@ export default function Landing() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className='relative'
+              className='ms-surface relative overflow-hidden p-6 md:p-8'
             >
-              <Safari
-                url='minishinobi.local/dashboard'
-                videoSrc='/vdo.mp4'
-                className='w-full shadow-2xl'
-              />
+              <div className='absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(145,169,130,0.12),transparent_40%)]' />
+              <div className='relative grid gap-4 md:grid-cols-3'>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Project queue</CardTitle>
+                    <CardDescription>
+                      Control release cadence across all nodes.
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Deployment logs</CardTitle>
+                    <CardDescription>
+                      Readable streams with terminal-first semantics.
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Health telemetry</CardTitle>
+                    <CardDescription>
+                      Know where each edge tunnel is performing.
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+              </div>
             </Motion.div>
           </div>
         </section>
 
-        {/* Features Grid */}
         <section
           id='features'
-          className='relative py-24 px-6'
+          className='relative px-6 py-20'
         >
           <div className='max-w-7xl mx-auto'>
             <Motion.div
@@ -247,7 +283,7 @@ export default function Landing() {
               viewport={{ once: true }}
               className='mb-16'
             >
-              <h2 className='text-4xl font-bold tracking-tight'>
+              <h2 className='text-4xl font-semibold tracking-tight'>
                 Everything you need <br /> to deploy anywhere
               </h2>
             </Motion.div>
@@ -257,7 +293,7 @@ export default function Landing() {
               initial='initial'
               whileInView='animate'
               viewport={{ once: true }}
-              className='grid md:grid-cols-2 lg:grid-cols-3 gap-6'
+              className='grid gap-6 md:grid-cols-2 lg:grid-cols-3'
             >
               {features.map((feature, idx) => {
                 const Icon = feature.icon;
@@ -265,17 +301,17 @@ export default function Landing() {
                   <Motion.div
                     key={idx}
                     variants={fadeInUp}
-                    className='p-6 rounded-xl border border-[#1F2A24] bg-[#121715]/50 hover:border-[#9CAF88]/30 transition-all group'
+                    className='ms-surface group p-6 transition-all hover:border-[color-mix(in_oklab,var(--accent),transparent_50%)]'
                   >
                     <div className='mb-4'>
-                      <div className='w-10 h-10 rounded-lg bg-[#9CAF88]/10 flex items-center justify-center group-hover:bg-[#9CAF88]/20 transition-colors'>
-                        <Icon className='w-5 h-5 text-[#9CAF88]' />
+                      <div className='flex h-10 w-10 items-center justify-center rounded-lg bg-(--accent-subtle) transition-colors group-hover:bg-[color-mix(in_oklab,var(--accent-subtle),white_6%)]'>
+                        <Icon className='h-5 w-5 text-(--accent-hover)' />
                       </div>
                     </div>
-                    <h3 className='font-semibold mb-2 text-white'>
+                    <h3 className='mb-2 font-semibold text-(--text-primary)'>
                       {feature.title}
                     </h3>
-                    <p className='text-sm text-[#A8B5AE]'>
+                    <p className='text-sm text-(--text-secondary)'>
                       {feature.description}
                     </p>
                   </Motion.div>
@@ -285,10 +321,9 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* How It Works */}
         <section
           id='how-it-works'
-          className='relative py-24 px-6 border-y border-[#1F2A24]'
+          className='relative border-y border-(--border) px-6 py-20'
         >
           <div className='max-w-7xl mx-auto'>
             <Motion.div
@@ -297,10 +332,10 @@ export default function Landing() {
               viewport={{ once: true }}
               className='mb-16'
             >
-              <h2 className='text-4xl font-bold tracking-tight mb-4'>
+              <h2 className='mb-4 text-4xl font-semibold tracking-tight'>
                 How it works
               </h2>
-              <p className='text-[#A8B5AE] max-w-2xl'>
+              <p className='max-w-2xl text-(--text-secondary)'>
                 From zero to live in three simple steps. No infrastructure
                 expertise required.
               </p>
@@ -311,32 +346,35 @@ export default function Landing() {
               initial='initial'
               whileInView='animate'
               viewport={{ once: true }}
-              className='grid md:grid-cols-3 gap-8'
+              className='grid gap-8 md:grid-cols-3'
             >
               {steps.map((step, idx) => (
                 <Motion.div
                   key={idx}
                   variants={fadeInUp}
-                  className='relative'
+                  className='ms-surface relative p-6'
                 >
                   {idx < steps.length - 1 && (
-                    <div className='hidden md:block absolute -right-4 top-8 w-8 h-0.5 bg-linear-to-r from-[#9CAF88]/50 to-transparent' />
+                    <div className='absolute -right-4 top-8 hidden h-0.5 w-8 bg-linear-to-r from-(--accent)/50 to-transparent md:block' />
                   )}
-                  <div className='mb-4'>
-                    <div className='text-5xl font-bold text-[#9CAF88]/30'>
+                  <div className='mb-2'>
+                    <div className='text-4xl font-bold text-(--accent)/30'>
                       {step.number}
                     </div>
                   </div>
-                  <h3 className='text-xl font-semibold mb-3'>{step.title}</h3>
-                  <p className='text-[#A8B5AE]'>{step.description}</p>
+                  <h3 className='mb-3 text-lg font-semibold text-(--text-primary)'>
+                    {step.title}
+                  </h3>
+                  <p className='text-sm text-(--text-secondary)'>
+                    {step.description}
+                  </p>
                 </Motion.div>
               ))}
             </Motion.div>
           </div>
         </section>
 
-        {/* Code Snippet Section */}
-        <section className='relative py-24 px-6'>
+        <section className='relative px-6 py-20'>
           <div className='max-w-4xl mx-auto'>
             <Motion.div
               initial={{ opacity: 0 }}
@@ -344,10 +382,10 @@ export default function Landing() {
               viewport={{ once: true }}
               className='mb-12'
             >
-              <h2 className='text-3xl font-bold tracking-tight mb-4'>
+              <h2 className='mb-4 text-3xl font-semibold tracking-tight'>
                 Deploy with one command
               </h2>
-              <p className='text-[#A8B5AE]'>
+              <p className='text-(--text-secondary)'>
                 Simple, elegant CLI. Everything you need, nothing you don't.
               </p>
             </Motion.div>
@@ -356,16 +394,16 @@ export default function Landing() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className='relative'
+              className='relative ms-surface overflow-hidden p-8'
             >
-              <div className='bg-[#121715] border border-[#1F2A24] rounded-xl p-8 overflow-hidden'>
-                <div className='absolute top-4 left-4 flex gap-2'>
-                  <div className='w-3 h-3 rounded-full bg-red-500/50' />
-                  <div className='w-3 h-3 rounded-full bg-yellow-500/50' />
-                  <div className='w-3 h-3 rounded-full bg-green-500/50' />
-                </div>
-                <pre className='text-sm text-[#A8B5AE] font-mono pt-6'>
-                  <code>{`$ npx minishinobi deploy
+              <div className='absolute top-4 left-4 flex gap-2'>
+                <div className='h-2.5 w-2.5 rounded-full bg-red-400/65' />
+                <div className='h-2.5 w-2.5 rounded-full bg-amber-400/65' />
+                <div className='h-2.5 w-2.5 rounded-full bg-(--accent)' />
+              </div>
+              <pre className='overflow-x-auto pt-4 text-[13px] leading-relaxed text-(--text-secondary)'>
+                <code>
+                  {`$ npx minishinobi deploy
 
 ✔ Authenticated as user
 → Reading configuration...
@@ -376,106 +414,87 @@ export default function Landing() {
 
 🚀 Your app is live!
 `}
-                                  </code>
-                </pre>
-              </div>
+                </code>
+              </pre>
             </Motion.div>
           </div>
         </section>
 
-        {/* Comparison Section */}
-        <section className='relative py-24 px-6 border-y border-[#1F2A24]'>
-          <div className='max-w-5xl mx-auto'>
-            <Motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              className='mb-12'
-            >
-              <h2 className='text-3xl font-bold tracking-tight text-center'>
-                Built differently
-              </h2>
-            </Motion.div>
+        <section className='relative border-y border-(--border) px-6 py-20'>
+          <div className='mx-auto grid max-w-5xl gap-8 md:grid-cols-2'>
+            <Card>
+              <CardHeader>
+                <CardTitle>Traditional cloud</CardTitle>
+              </CardHeader>
+              <ul className='space-y-3 text-sm text-(--text-secondary)'>
+                {[
+                  'Recurring infra spend',
+                  'Vendor lock-in',
+                  'Long region distances',
+                  'Complex setup',
+                ].map((item) => (
+                  <li
+                    key={item}
+                    className='flex items-start gap-2'
+                  >
+                    <span className='text-red-300'>✕</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
 
-            <Motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              className='grid md:grid-cols-2 gap-8'
-            >
-              <div className='p-8 rounded-xl border border-[#1F2A24] bg-[#121715]/50'>
-                <h3 className='font-semibold mb-6 text-[#A8B5AE]'>
-                  Traditional Cloud
-                </h3>
-                <ul className='space-y-3 text-sm text-[#A8B5AE]'>
-                  <li className='flex gap-3'>
-                    <span className='text-red-400'>✕</span>
-                    <span>Expensive monthly bills</span>
-                  </li>
-                  <li className='flex gap-3'>
-                    <span className='text-red-400'>✕</span>
-                    <span>Vendor lock-in</span>
-                  </li>
-                  <li className='flex gap-3'>
-                    <span className='text-red-400'>✕</span>
-                    <span>Complex configuration</span>
-                  </li>
-                  <li className='flex gap-3'>
-                    <span className='text-red-400'>✕</span>
-                    <span>Data centers far away</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className='p-8 rounded-xl border border-[#9CAF88]/20 bg-[#9CAF88]/5'>
-                <h3 className='font-semibold mb-6 text-[#9CAF88]'>
+            <Card className='border-[color-mix(in_oklab,var(--accent),transparent_50%)]'>
+              <CardHeader>
+                <CardTitle className='text-(--accent-hover)'>
                   MiniShinobi
-                </h3>
-                <ul className='space-y-3 text-sm text-[#A8B5AE]'>
-                  <li className='flex gap-3'>
-                    <span className='text-[#9CAF88]'>✓</span>
-                    <span>Zero cloud costs</span>
+                </CardTitle>
+              </CardHeader>
+              <ul className='space-y-3 text-sm text-(--text-secondary)'>
+                {[
+                  'Owned and local compute',
+                  'Open-source by design',
+                  'Fast setup path',
+                  'Edge-first performance',
+                ].map((item) => (
+                  <li
+                    key={item}
+                    className='flex items-start gap-2'
+                  >
+                    <CheckCircle2 className='mt-0.5 h-4 w-4 text-(--accent-hover)' />
+                    <span>{item}</span>
                   </li>
-                  <li className='flex gap-3'>
-                    <span className='text-[#9CAF88]'>✓</span>
-                    <span>100% open source</span>
-                  </li>
-                  <li className='flex gap-3'>
-                    <span className='text-[#9CAF88]'>✓</span>
-                    <span>Zero configuration</span>
-                  </li>
-                  <li className='flex gap-3'>
-                    <span className='text-[#9CAF88]'>✓</span>
-                    <span>Deploy from anywhere</span>
-                  </li>
-                </ul>
-              </div>
-            </Motion.div>
+                ))}
+              </ul>
+            </Card>
           </div>
         </section>
 
-        {/* Final CTA */}
-        <section className='relative py-24 px-6'>
-          <div className='max-w-4xl mx-auto text-center'>
+        <section className='relative px-6 py-24'>
+          <div className='mx-auto max-w-4xl text-center'>
             <Motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              className='space-y-8'
+              className='space-y-7'
             >
-              <h2 className='text-5xl font-bold tracking-tight'>
+              <div className='inline-flex items-center gap-2 rounded-full border border-(--border) bg-(--surface) px-4 py-1 text-xs uppercase tracking-[0.14em] text-(--text-muted)'>
+                <ServerCog className='h-3.5 w-3.5' />
+                Calm power for dev infra
+              </div>
+              <h2 className='text-4xl font-semibold tracking-tight md:text-5xl'>
                 Start deploying today
               </h2>
-              <p className='text-lg text-[#A8B5AE] max-w-2xl mx-auto'>
-                Join the beta. Deploy your first app in minutes. Join developers
-                who are rethinking infrastructure.
+              <p className='mx-auto max-w-2xl text-lg text-(--text-secondary)'>
+                Launch your first app from your own edge compute in minutes.
+                Practical infrastructure, no cloud fatigue.
               </p>
-              <div className='flex flex-col sm:flex-row gap-4 justify-center pt-4'>
+              <div className='flex justify-center pt-2'>
                 <Button
                   onClick={() => (window.location.href = '/auth/github')}
-                  className='bg-[#9CAF88] text-[#0B0F0C] hover:bg-[#a8c29a] font-semibold px-8 py-3 h-12 rounded-lg transition-all inline-flex items-center justify-center gap-2'
+                  className='h-12 px-8'
                 >
-                  Get Started Free
+                  Get Started
                   <ArrowRight className='w-4 h-4' />
                 </Button>
               </div>
