@@ -1,0 +1,9 @@
+# MiniShinobi — https://minishinobi.bhaumicsingh.tech
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /project/
+Disallow: /deployment/
+Disallow: /login
+
+Sitemap: https://minishinobi.bhaumicsingh.tech/sitemap.xml
