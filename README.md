@@ -49,7 +49,7 @@ Internet
     └──> Cloudflare (DNS + proxy)
             └──> cloudflared tunnel (authenticated tunnel to your device)
                     └──> Nginx on port 80 (host-based virtual routing)
-                            ├──> dashboard.<domain>  ──> MiniShinobi backend (port 3000)
+                            ├──> minishinobi.<domain>  ──> MiniShinobi backend (port 3000)
                             │                              ├── serves built React frontend
                             │                              ├── REST API (/api/...)
                             │                              └── POST /deploy (webhook)
@@ -213,7 +213,7 @@ tunnel: <your-tunnel-uuid>
 credentials-file: /path/to/.cloudflared/<uuid>.json
 
 ingress:
-  - hostname: dashboard.yourdomain.com
+  - hostname: minishinobi.yourdomain.com
     service: http://localhost:80
   - hostname: '*.yourdomain.com'
     service: http://localhost:80
@@ -222,7 +222,7 @@ ingress:
 
 Both the dashboard and all `<app>.yourdomain.com` subdomains route through Nginx on port 80. Nginx then proxies to the correct backend port.
 
-Add DNS records in Cloudflare for `dashboard.yourdomain.com` and `*.yourdomain.com`, pointing them to the tunnel (Cloudflare will create these automatically if you use `cloudflared tunnel route dns`).
+Add DNS records in Cloudflare for `minishinobi.yourdomain.com` and `*.yourdomain.com`, pointing them to the tunnel (Cloudflare will create these automatically if you use `cloudflared tunnel route dns`).
 
 ### 9. Start Everything with PM2
 
@@ -249,7 +249,7 @@ Expected output:
 └─────────────────────────┴─────────┴──────┴───────┘
 ```
 
-Open `https://dashboard.yourdomain.com` in your browser. You should see the MiniShinobi login page.
+Open `https://minishinobi.yourdomain.com` in your browser. You should see the MiniShinobi login page.
 
 ---
 
@@ -259,29 +259,29 @@ All backend configuration is done via `backend/.env`. The server will not start 
 
 ### Full Variable Reference
 
-| Variable                  | Required | Default                              | Description                                                                                                                                                                              |
-| ------------------------- | -------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `PORT`                    | No       | `3000`                               | Port the backend process listens on (binds to `127.0.0.1` only)                                                                                                                          |
-| `NODE_ENV`                | No       | —                                    | Set to `production` for secure cookies and production behaviour                                                                                                                          |
-| `SESSION_SECRET`          | **Yes**  | —                                    | Random string used to sign session cookies. Use a long random value                                                                                                                      |
-| `DASHBOARD_URL`           | **Yes**  | —                                    | Full URL of your dashboard, e.g. `https://dashboard.yourdomain.com`. Used by CORS and OAuth redirect                                                                                     |
-| `GITHUB_CLIENT_ID`        | **Yes**  | —                                    | OAuth App client ID from GitHub                                                                                                                                                          |
-| `GITHUB_CLIENT_SECRET`    | **Yes**  | —                                    | OAuth App client secret from GitHub                                                                                                                                                      |
-| `GITHUB_CALLBACK_URL`     | **Yes**  | —                                    | Must exactly match the callback URL in your GitHub OAuth App, e.g. `https://dashboard.yourdomain.com/auth/github/callback`                                                               |
-| `DB_PATH`                 | **Yes**  | —                                    | Absolute path to the SQLite file, e.g. `/home/user/MiniShinobi/runtime/db.sqlite`. The directory is created automatically. Sessions are stored in a `sessions/` folder next to this file |
-| `LOGS_DIR`                | No       | —                                    | Path for platform-level logs (used for reference; PM2 manages log files directly via `ecosystem.config.js`)                                                                              |
-| `APPS_DIR`                | No       | `<project-root>/apps`                | Where cloned repositories are stored. Each project gets a subdirectory named after its slug                                                                                              |
-| `RUNTIME_DIR`             | No       | `<project-root>/runtime`             | Root of the runtime metadata directory. Contains `projects.json` and `logs/`                                                                                                             |
-| `BASE_DOMAIN`             | No       | `minishinobi.dev`                    | Subdomain suffix for deployed apps. If set to `yourdomain.com`, a project named `blog` becomes `blog.yourdomain.com`                                                                     |
-| `NGINX_SITES_ENABLED_DIR` | No       | `<project-root>/nginx/sites-enabled` | Where generated per-project Nginx `.conf` files are written                                                                                                                              |
-| `NGINX_LISTEN_PORT`       | No       | `4000`                               | Port used by generated app vhost server blocks. Must match the local Nginx listener your tunnel points to (Termux default in this repo is `4000`)                                     |
-| `NGINX_RELOAD_CMD`        | No       | `nginx -s reload`                    | Command to reload Nginx after a vhost config changes                                                                                                                                     |
-| `WEBHOOK_SECRET`          | **Yes**  | —                                    | HMAC-SHA256 secret shared with GitHub (or any webhook source). Used to verify `POST /deploy` requests                                                                                    |
-| `APP_PORT_START`          | No       | `5000`                               | Start of the port range for deployed app processes                                                                                                                                       |
-| `APP_PORT_END`            | No       | `5999`                               | End of the port range. MiniShinobi scans this range and picks the first free port                                                                                                        |
-| `BUILD_COMMAND_TIMEOUT_MS`| No       | `1800000`                            | Hard timeout (milliseconds) for each build command (`npm install`, `npm run build`, etc). Prevents infinite hangs                                                                       |
-| `BUILD_IDLE_TIMEOUT_MS`   | No       | `600000`                             | Kills a build command if it produces no stdout/stderr for this long (milliseconds)                                                                                                       |
-| `BUILD_HEARTBEAT_MS`      | No       | `20000`                              | Interval (milliseconds) for "command still running" log messages during long builds                                                                                                      |
+| Variable                   | Required | Default                              | Description                                                                                                                                                                              |
+| -------------------------- | -------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PORT`                     | No       | `3000`                               | Port the backend process listens on (binds to `127.0.0.1` only)                                                                                                                          |
+| `NODE_ENV`                 | No       | —                                    | Set to `production` for secure cookies and production behaviour                                                                                                                          |
+| `SESSION_SECRET`           | **Yes**  | —                                    | Random string used to sign session cookies. Use a long random value                                                                                                                      |
+| `DASHBOARD_URL`            | **Yes**  | —                                    | Full URL of your dashboard, e.g. `https://minishinobi.yourdomain.com`. Used by CORS and OAuth redirect                                                                                   |
+| `GITHUB_CLIENT_ID`         | **Yes**  | —                                    | OAuth App client ID from GitHub                                                                                                                                                          |
+| `GITHUB_CLIENT_SECRET`     | **Yes**  | —                                    | OAuth App client secret from GitHub                                                                                                                                                      |
+| `GITHUB_CALLBACK_URL`      | **Yes**  | —                                    | Must exactly match the callback URL in your GitHub OAuth App, e.g. `https://minishinobi.yourdomain.com/auth/github/callback`                                                             |
+| `DB_PATH`                  | **Yes**  | —                                    | Absolute path to the SQLite file, e.g. `/home/user/MiniShinobi/runtime/db.sqlite`. The directory is created automatically. Sessions are stored in a `sessions/` folder next to this file |
+| `LOGS_DIR`                 | No       | —                                    | Path for platform-level logs (used for reference; PM2 manages log files directly via `ecosystem.config.js`)                                                                              |
+| `APPS_DIR`                 | No       | `<project-root>/apps`                | Where cloned repositories are stored. Each project gets a subdirectory named after its slug                                                                                              |
+| `RUNTIME_DIR`              | No       | `<project-root>/runtime`             | Root of the runtime metadata directory. Contains `projects.json` and `logs/`                                                                                                             |
+| `BASE_DOMAIN`              | No       | `minishinobi.dev`                    | Subdomain suffix for deployed apps. If set to `yourdomain.com`, a project named `blog` becomes `blog.yourdomain.com`                                                                     |
+| `NGINX_SITES_ENABLED_DIR`  | No       | `<project-root>/nginx/sites-enabled` | Where generated per-project Nginx `.conf` files are written                                                                                                                              |
+| `NGINX_LISTEN_PORT`        | No       | `4000`                               | Port used by generated app vhost server blocks. Must match the local Nginx listener your tunnel points to (Termux default in this repo is `4000`)                                        |
+| `NGINX_RELOAD_CMD`         | No       | `nginx -s reload`                    | Command to reload Nginx after a vhost config changes                                                                                                                                     |
+| `WEBHOOK_SECRET`           | **Yes**  | —                                    | HMAC-SHA256 secret shared with GitHub (or any webhook source). Used to verify `POST /deploy` requests                                                                                    |
+| `APP_PORT_START`           | No       | `5000`                               | Start of the port range for deployed app processes                                                                                                                                       |
+| `APP_PORT_END`             | No       | `5999`                               | End of the port range. MiniShinobi scans this range and picks the first free port                                                                                                        |
+| `BUILD_COMMAND_TIMEOUT_MS` | No       | `1800000`                            | Hard timeout (milliseconds) for each build command (`npm install`, `npm run build`, etc). Prevents infinite hangs                                                                        |
+| `BUILD_IDLE_TIMEOUT_MS`    | No       | `600000`                             | Kills a build command if it produces no stdout/stderr for this long (milliseconds)                                                                                                       |
+| `BUILD_HEARTBEAT_MS`       | No       | `20000`                              | Interval (milliseconds) for "command still running" log messages during long builds                                                                                                      |
 
 ### Example `.env`
 
@@ -290,10 +290,10 @@ PORT=3000
 NODE_ENV=production
 SESSION_SECRET=change-me-to-a-long-random-string
 
-DASHBOARD_URL=https://dashboard.yourdomain.com
+DASHBOARD_URL=https://minishinobi.yourdomain.com
 GITHUB_CLIENT_ID=Ov23liXXXXXXXXXX
 GITHUB_CLIENT_SECRET=abc123...
-GITHUB_CALLBACK_URL=https://dashboard.yourdomain.com/auth/github/callback
+GITHUB_CALLBACK_URL=https://minishinobi.yourdomain.com/auth/github/callback
 
 DB_PATH=/home/user/MiniShinobi/runtime/db.sqlite
 
@@ -313,8 +313,8 @@ BUILD_HEARTBEAT_MS=20000
 ### Creating a GitHub OAuth App
 
 1. Go to **GitHub → Settings → Developer Settings → OAuth Apps → New OAuth App**
-2. Set **Homepage URL** to `https://dashboard.yourdomain.com`
-3. Set **Authorization callback URL** to `https://dashboard.yourdomain.com/auth/github/callback`
+2. Set **Homepage URL** to `https://minishinobi.yourdomain.com`
+3. Set **Authorization callback URL** to `https://minishinobi.yourdomain.com/auth/github/callback`
 4. Copy the **Client ID** and generate a **Client Secret**
 5. Paste both into `backend/.env`
 
@@ -326,7 +326,7 @@ BUILD_HEARTBEAT_MS=20000
 
 This is the standard flow for projects you create and manage in the UI.
 
-1. Log in at `https://dashboard.yourdomain.com`
+1. Log in at `https://minishinobi.yourdomain.com`
 2. Click **New Project** and fill in the repository URL, branch, and optional build/start commands
 3. Click **Deploy** on the project card
 4. Watch live deployment logs stream in real time
@@ -345,7 +345,7 @@ Use this to auto-deploy when you push to GitHub.
 **Set up the webhook in GitHub:**
 
 1. Go to your repository → **Settings → Webhooks → Add webhook**
-2. Set **Payload URL** to `https://dashboard.yourdomain.com/deploy`
+2. Set **Payload URL** to `https://minishinobi.yourdomain.com/deploy`
 3. Set **Content type** to `application/json`
 4. Set **Secret** to the same value as your `WEBHOOK_SECRET` env variable
 5. Choose **Just the push event** (or specific events)
@@ -363,7 +363,7 @@ If the project doesn't exist yet in the database, MiniShinobi creates it automat
 PAYLOAD='{"repository":{"clone_url":"https://github.com/your-org/your-repo.git"},"ref":"refs/heads/main"}'
 SIG=$(echo -n "$PAYLOAD" | openssl dgst -sha256 -hmac "your-webhook-secret" | awk '{print "sha256="$2}')
 
-curl -X POST https://dashboard.yourdomain.com/deploy \
+curl -X POST https://minishinobi.yourdomain.com/deploy \
   -H "Content-Type: application/json" \
   -H "x-hub-signature-256: $SIG" \
   -d "$PAYLOAD"
@@ -418,14 +418,14 @@ When a project has no custom commands set (or `.minishinobi.json` is absent), Mi
 
 ### Config file detection matrix
 
-| Framework    | Config files checked |
-| ------------ | -------------------- |
-| `next`       | `next.config.js`, `next.config.mjs`, `next.config.cjs`, `next.config.ts`, `next.config.mts`, `next.config.cts` |
-| `nuxt`       | `nuxt.config.js`, `nuxt.config.mjs`, `nuxt.config.cjs`, `nuxt.config.ts`, `nuxt.config.mts`, `nuxt.config.cts` |
-| `remix`      | `remix.config.js`, `remix.config.mjs`, `remix.config.cjs`, `remix.config.ts`, `remix.config.mts`, `remix.config.cts` |
-| `astro`      | `astro.config.js`, `astro.config.mjs`, `astro.config.cjs`, `astro.config.ts`, `astro.config.mts`, `astro.config.cts` |
-| `sveltekit`  | `svelte.config.js`, `svelte.config.mjs`, `svelte.config.cjs`, `svelte.config.ts`, `svelte.config.mts`, `svelte.config.cts` (requires `@sveltejs/kit`) |
-| `vite`       | `vite.config.js`, `vite.config.mjs`, `vite.config.cjs`, `vite.config.ts`, `vite.config.mts`, `vite.config.cts` |
+| Framework   | Config files checked                                                                                                                                  |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `next`      | `next.config.js`, `next.config.mjs`, `next.config.cjs`, `next.config.ts`, `next.config.mts`, `next.config.cts`                                        |
+| `nuxt`      | `nuxt.config.js`, `nuxt.config.mjs`, `nuxt.config.cjs`, `nuxt.config.ts`, `nuxt.config.mts`, `nuxt.config.cts`                                        |
+| `remix`     | `remix.config.js`, `remix.config.mjs`, `remix.config.cjs`, `remix.config.ts`, `remix.config.mts`, `remix.config.cts`                                  |
+| `astro`     | `astro.config.js`, `astro.config.mjs`, `astro.config.cjs`, `astro.config.ts`, `astro.config.mts`, `astro.config.cts`                                  |
+| `sveltekit` | `svelte.config.js`, `svelte.config.mjs`, `svelte.config.cjs`, `svelte.config.ts`, `svelte.config.mts`, `svelte.config.cts` (requires `@sveltejs/kit`) |
+| `vite`      | `vite.config.js`, `vite.config.mjs`, `vite.config.cjs`, `vite.config.ts`, `vite.config.mts`, `vite.config.cts`                                        |
 
 If no config match exists, dependency fallback is used:
 
@@ -439,16 +439,16 @@ If no config match exists, dependency fallback is used:
 
 ### Preset commands
 
-| Framework   | Build Command                  | Start Command    |
-| ----------- | ------------------------------ | ---------------- |
-| `next`      | `npm install && npm run build` | `npm start`      |
-| `nuxt`      | `npm install && npm run build` | `npm run start`  |
-| `remix`     | `npm install && npm run build` | `npm run start`  |
-| `astro`     | `npm install && npm run build` | `npx serve dist` |
+| Framework   | Build Command                  | Start Command     |
+| ----------- | ------------------------------ | ----------------- |
+| `next`      | `npm install && npm run build` | `npm start`       |
+| `nuxt`      | `npm install && npm run build` | `npm run start`   |
+| `remix`     | `npm install && npm run build` | `npm run start`   |
+| `astro`     | `npm install && npm run build` | `npx serve dist`  |
 | `sveltekit` | `npm install && npm run build` | `npm run preview` |
-| `vite`      | `npm install && npm run build` | `npx serve dist` |
-| `node`      | `npm install`                  | `npm start`      |
-| `static`    | _(none)_                       | `npx serve .`    |
+| `vite`      | `npm install && npm run build` | `npx serve dist`  |
+| `node`      | `npm install`                  | `npm start`       |
+| `static`    | _(none)_                       | `npx serve .`     |
 
 ### Command priority
 
@@ -501,12 +501,12 @@ All `/api/*` routes require authentication (GitHub OAuth session). Public routes
 
 All project routes are scoped to the authenticated user. Users cannot access each other's projects.
 
-| Method   | Path                | Description                                                      |
-| -------- | ------------------- | ---------------------------------------------------------------- |
-| `GET`    | `/api/projects`       | List all projects for the current user, ordered by creation date |
+| Method   | Path                  | Description                                                       |
+| -------- | --------------------- | ----------------------------------------------------------------- |
+| `GET`    | `/api/projects`       | List all projects for the current user, ordered by creation date  |
 | `GET`    | `/api/projects/repos` | List repositories available from the authenticated GitHub account |
 | `POST`   | `/api/projects`       | Create a new project and automatically create/update push webhook |
-| `DELETE` | `/api/projects/:id`   | Delete a project and all its data                                |
+| `DELETE` | `/api/projects/:id`   | Delete a project and all its data                                 |
 
 **`POST /api/projects` body:**
 
@@ -553,8 +553,8 @@ Returns `409 Conflict` if a project with that slug already exists under your acc
 
 ### Deploy (Webhook + CLI)
 
-| Method | Path      | Description |
-| ------ | --------- | ----------- |
+| Method | Path      | Description                                                                                 |
+| ------ | --------- | ------------------------------------------------------------------------------------------- |
 | `POST` | `/deploy` | Trigger a deployment. Supports webhook mode (`repository.clone_url`) and CLI mode (`repo`). |
 
 Webhook mode expects HMAC signature (`x-hub-signature-256` or `x-minishinobi-signature`).
@@ -572,12 +572,12 @@ If `WEBHOOK_SECRET` is set, include `x-minishinobi-secret` in CLI deploy request
 
 ### Runtime Control (CLI endpoints)
 
-| Method   | Path                     | Description |
-| -------- | ------------------------ | ----------- |
-| `GET`    | `/apps`                  | List runtime apps from `runtime/projects.json` |
-| `GET`    | `/logs/:project`         | Stream latest deployment logs (SSE) |
-| `POST`   | `/apps/:project/restart` | Restart project process |
-| `POST`   | `/apps/:project/stop`    | Stop project process |
+| Method   | Path                     | Description                                                     |
+| -------- | ------------------------ | --------------------------------------------------------------- |
+| `GET`    | `/apps`                  | List runtime apps from `runtime/projects.json`                  |
+| `GET`    | `/logs/:project`         | Stream latest deployment logs (SSE)                             |
+| `POST`   | `/apps/:project/restart` | Restart project process                                         |
+| `POST`   | `/apps/:project/stop`    | Stop project process                                            |
 | `DELETE` | `/apps/:project`         | Stop process, remove app dir, remove nginx config, reload nginx |
 
 ### Health
@@ -704,24 +704,24 @@ MiniShinobi/
 
 ## Visual Workflow
 
-| Step 1: Login | Step 2: Dashboard |
-| :---: | :---: |
-| ![Login](assets/image-1.png) | ![Dashboard](assets/image-2.png) |
+|            Step 1: Login            |         Step 2: Dashboard         |
+| :---------------------------------: | :-------------------------------: |
+|    ![Login](assets/image-1.png)     | ![Dashboard](assets/image-2.png)  |
 | **Authentication via GitHub OAuth** | **Overview of all your projects** |
 
-| Step 3: Create Project | Step 4: Configure |
-| :---: | :---: |
+|       Step 3: Create Project       |          Step 4: Configure           |
+| :--------------------------------: | :----------------------------------: |
 | ![New Project](assets/image-3.png) | ![Configuration](assets/image-4.png) |
-| **Add a new repository** | **Setup build and install commands** |
+|      **Add a new repository**      | **Setup build and install commands** |
 
-| Step 5: Build Logs | Step 6: Ready |
-| :---: | :---: |
-| ![Build Logs](assets/image-5.png) | ![Ready](assets/image-6.png) |
+|         Step 5: Build Logs          |          Step 6: Ready           |
+| :---------------------------------: | :------------------------------: |
+|  ![Build Logs](assets/image-5.png)  |   ![Ready](assets/image-6.png)   |
 | **Real-time deployment monitoring** | **Successful deployment status** |
 
-| Step 7: Live App |
-| :---: |
-| ![Live App](assets/image-7.png) |
+|           Step 7: Live App           |
+| :----------------------------------: |
+|   ![Live App](assets/image-7.png)    |
 | **Your project live on your domain** |
 
 <br />
@@ -805,8 +805,3 @@ This project is open source under the [MIT License](LICENSE).
   <sub>Built with ❤️ by bhaumic <br />on a Snapdragon 660 · 4 GB RAM · PixelExperience Android 13</sub><br />
   <sub>Zero native compilation: sql.js + session-file-store + child_process (built-in)</sub>
 </p>
-
-
-
-
-

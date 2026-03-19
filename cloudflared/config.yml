@@ -1,11 +1,11 @@
 ﻿# MiniShinobi Cloudflare Tunnel Configuration
-# Route both dashboard and all project subdomains to nginx (port 4000).
+# Route both minishinobi and all project subdomains to nginx (port 4000).
 
 tunnel: <TUNNEL_ID>
 credentials-file: /data/data/com.termux/files/home/.cloudflared/<TUNNEL_ID>.json
 
 ingress:
-  - hostname: dashboard.<yourdomain.com>
+  - hostname: minishinobi.<yourdomain.com>
     service: http://localhost:4000
 
   - hostname: '*.<yourdomain.com>'
