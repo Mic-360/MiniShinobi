@@ -1,4 +1,4 @@
-﻿import { GitBranch, Plus, Trash2 } from 'lucide-react';
+import { GitBranch, Plus, Search, Github } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -8,15 +8,6 @@ import {
   getProjects,
 } from '../api';
 import { Layout } from '../components/Layout';
-import { Button } from '../components/ui/Button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../components/ui/Card';
-import { Input } from '../components/ui/Input';
 import { Modal } from '../components/ui/Modal';
 import { Skeleton } from '../components/ui/Skeleton';
 
@@ -111,231 +102,164 @@ export default function Dashboard() {
     }
   };
 
-  const handleDelete = async (e, id) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!confirm('Are you sure you want to delete this project?')) return;
-    await deleteProject(id);
-    setProjects((p) => p.filter((x) => x.id !== id));
-  };
-
   return (
     <Layout
-      title='Projects'
-      subtitle='Deploy from edge nodes with a clean, deterministic release workflow.'
+      title='Overview'
       actions={
-        <Button
+        <button
           onClick={openImportModal}
-          className='px-4'
+          className='bg-white text-black px-4 py-2 rounded-md font-medium text-sm flex items-center gap-2 hover:bg-gray-200 transition-colors'
         >
           <Plus className='h-4 w-4' />
-          New Project
-        </Button>
+          Add New...
+        </button>
       }
     >
-      <div className='mb-8 grid gap-4 md:grid-cols-3'>
-        <Card>
-          <CardHeader>
-            <CardDescription>Total projects</CardDescription>
-            <CardTitle>{projects.length}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>Most common branch</CardDescription>
-            <CardTitle>{projects[0]?.branch || 'main'}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>Source control</CardDescription>
-            <CardTitle>GitHub</CardTitle>
-          </CardHeader>
-        </Card>
+      <div className="flex items-center gap-4 mb-8">
+         <div className="relative flex-1 max-w-md">
+            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input 
+              type="text" 
+              placeholder="Search Projects..." 
+              className="w-full bg-[#111] border border-white/10 rounded-md py-2 pl-10 pr-4 text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-white/30 transition-colors"
+            />
+         </div>
       </div>
 
       {loadingProjects ? (
-        <div className='grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3'>
+        <div className='grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3'>
           {Array.from({ length: 6 }).map((_, idx) => (
-            <Card key={idx}>
-              <CardContent>
-                <Skeleton className='h-5 w-2/3' />
-                <Skeleton className='h-4 w-3/4' />
-                <Skeleton className='h-4 w-1/2' />
-              </CardContent>
-            </Card>
+            <div key={idx} className="bg-black border border-white/10 rounded-xl p-6 h-[200px]">
+                <Skeleton className='h-6 w-2/3 mb-4 bg-white/10' />
+                <Skeleton className='h-4 w-3/4 mb-2 bg-white/10' />
+                <Skeleton className='h-4 w-1/2 bg-white/10' />
+            </div>
           ))}
         </div>
       ) : (
-        <div className='grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3'>
+        <div className='grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3'>
           {projects.map((p) => (
             <Link
               key={p.id}
               to={`/project/${p.id}`}
-              className='block'
+              className='block group'
             >
-              <Card className='group h-full transition-all duration-200 hover:-translate-y-0.5 hover:border-[color:color-mix(in_oklab,var(--accent),transparent_40%)]'>
-                <CardHeader className='flex-row items-start justify-between space-y-0'>
-                  <div className='min-w-0'>
-                    <CardTitle className='truncate'>{p.name}</CardTitle>
-                    <CardDescription className='mt-1 truncate font-mono text-xs'>
-                      {p.repo_url.replace('https://github.com/', '')}
-                    </CardDescription>
-                  </div>
-                  <button
-                    className='inline-flex h-8 w-8 items-center justify-center rounded-md text-[var(--text-muted)] opacity-0 transition-all hover:bg-red-500/15 hover:text-red-300 group-hover:opacity-100'
-                    onClick={(e) => handleDelete(e, p.id)}
-                    aria-label={`Delete ${p.name}`}
-                  >
-                    <Trash2 className='h-4 w-4' />
-                  </button>
-                </CardHeader>
-
-                <CardContent className='space-y-4'>
-                  <div className='rounded-[10px] border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2'>
-                    <p className='text-[11px] uppercase tracking-[0.12em] text-[var(--text-muted)]'>
-                      Repository
-                    </p>
-                    <p className='truncate text-xs text-[var(--text-secondary)]'>
-                      {p.repo_url}
-                    </p>
-                  </div>
-
-                  <div className='flex items-center justify-between border-t border-[var(--border)] pt-3'>
-                    <div className='inline-flex items-center gap-1.5 text-xs text-[var(--text-secondary)]'>
-                      <GitBranch className='h-3.5 w-3.5' />
-                      <span className='font-mono'>{p.branch}</span>
+              <div className="bg-black border border-white/10 rounded-xl p-6 h-[200px] flex flex-col justify-between transition-all duration-200 hover:border-white/30 hover:bg-[#0a0a0a]">
+                 <div>
+                    <div className="flex items-center justify-between mb-2">
+                       <h3 className="font-semibold text-lg text-white group-hover:text-white truncate">{p.name}</h3>
+                       <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center">
+                          <Github className="w-3.5 h-3.5 text-white" />
+                       </div>
                     </div>
-                    <span className='text-xs font-medium text-[var(--accent-hover)]'>
-                      Open project →
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
+                    <p className="text-sm text-gray-400 truncate">
+                      {p.repo_url.replace('https://github.com/', '')}
+                    </p>
+                 </div>
+
+                 <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-gray-400">
+                       <GitBranch className="w-4 h-4" />
+                       {p.branch}
+                    </div>
+                    <span className="text-xs text-gray-500">Just now</span>
+                 </div>
+              </div>
             </Link>
           ))}
         </div>
       )}
 
       {!loadingProjects && projects.length === 0 && (
-        <div className='ms-surface mt-6 flex flex-col items-center justify-center border-dashed px-8 py-16 text-center'>
-          <h3 className='text-base font-semibold text-[var(--text-primary)]'>
-            No projects yet
-          </h3>
-          <p className='mb-5 mt-2 text-sm text-[var(--text-secondary)]'>
-            Connect a repository and ship your first edge deployment.
+        <div className='mt-8 border border-white/10 border-dashed rounded-xl p-12 text-center flex flex-col items-center justify-center bg-[#0a0a0a]'>
+          <h3 className='text-xl font-semibold text-white'>No projects found</h3>
+          <p className='mt-2 text-gray-400 mb-6'>
+            Get started by importing a repository from GitHub.
           </p>
-          <Button
+          <button
             onClick={openImportModal}
-            variant='secondary'
+            className='bg-white text-black px-6 py-2 rounded-md font-medium text-sm hover:bg-gray-200 transition-colors'
           >
-            Create Project
-          </Button>
+            Import Project
+          </button>
         </div>
       )}
 
       <Modal
         isOpen={isModalOpen}
         onClose={resetModal}
-        title='Import Project'
+        title='Import Git Repository'
       >
-        <form
-          onSubmit={handleCreate}
-          className='space-y-4'
-        >
-          <div className='space-y-1.5'>
-            <label className='block text-xs font-medium tracking-wide text-[var(--text-secondary)]'>
-              GitHub Repository
+        <form onSubmit={handleCreate} className='space-y-6'>
+          <div className='space-y-2'>
+            <label className='block text-sm font-medium text-gray-300'>
+              Import from GitHub
             </label>
             <select
-              className='flex h-10 w-full rounded-[10px] border border-[var(--border)] bg-[var(--surface)] px-3.5 py-2 text-sm text-[var(--text-primary)] transition-all placeholder:text-[var(--text-muted)] focus-visible:border-[var(--accent)]/70 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-[var(--accent)]/20 disabled:cursor-not-allowed disabled:opacity-50'
+              className='w-full bg-[#111] border border-white/10 rounded-md py-2.5 px-3 text-sm text-white focus:outline-none focus:border-white/30'
               value={form.repo_url}
               onChange={(e) => handleRepositorySelect(e.target.value)}
               disabled={loadingRepos || isCreating}
               required
             >
               <option value=''>
-                {loadingRepos
-                  ? 'Loading repositories...'
-                  : 'Select a repository'}
+                {loadingRepos ? 'Loading repositories...' : 'Select a repository...'}
               </option>
               {repositories.map((repo) => (
-                <option
-                  key={repo.id}
-                  value={repo.clone_url}
-                >
-                  {repo.full_name}
-                  {repo.private ? ' (private)' : ''}
+                <option key={repo.id} value={repo.clone_url}>
+                  {repo.full_name} {repo.private ? ' (Private)' : ''}
                 </option>
               ))}
             </select>
-            {repoError && <p className='text-xs text-red-300'>{repoError}</p>}
+            {repoError && <p className='text-xs text-red-400 mt-1'>{repoError}</p>}
           </div>
-          <Input
-            label='Project Name'
-            placeholder='my-app'
-            value={form.name}
-            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            required
-          />
-          <div className='grid grid-cols-2 gap-4'>
-            <Input
-              label='Branch'
-              placeholder='main'
-              value={form.branch}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, branch: e.target.value }))
-              }
-            />
-            <Input
-              label='Output Directory'
-              placeholder='dist'
-              value={form.output_dir}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, output_dir: e.target.value }))
-              }
-            />
+
+          <div className="space-y-4 border-t border-white/10 pt-6">
+            <h4 className="text-sm font-medium text-gray-300">Project Configuration</h4>
+            
+            <div className="space-y-2">
+              <label className="text-sm text-gray-400">Project Name</label>
+              <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="w-full bg-[#111] border border-white/10 rounded-md py-2 px-3 text-sm text-white focus:outline-none focus:border-white/30" required placeholder="my-app" />
+            </div>
+
+            <div className='grid grid-cols-2 gap-4'>
+              <div className="space-y-2">
+                <label className="text-sm text-gray-400">Branch</label>
+                <input type="text" value={form.branch} onChange={e => setForm(f => ({ ...f, branch: e.target.value }))} className="w-full bg-[#111] border border-white/10 rounded-md py-2 px-3 text-sm text-white focus:outline-none focus:border-white/30" placeholder="main" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm text-gray-400">Output Directory</label>
+                <input type="text" value={form.output_dir} onChange={e => setForm(f => ({ ...f, output_dir: e.target.value }))} className="w-full bg-[#111] border border-white/10 rounded-md py-2 px-3 text-sm text-white focus:outline-none focus:border-white/30" placeholder="dist" />
+              </div>
+            </div>
+
+            <div className='grid grid-cols-2 gap-4'>
+              <div className="space-y-2">
+                <label className="text-sm text-gray-400">Install Command</label>
+                <input type="text" value={form.install_command} onChange={e => setForm(f => ({ ...f, install_command: e.target.value }))} className="w-full bg-[#111] border border-white/10 rounded-md py-2 px-3 text-sm text-white focus:outline-none focus:border-white/30" placeholder="npm install" />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm text-gray-400">Build Command</label>
+                <input type="text" value={form.build_command} onChange={e => setForm(f => ({ ...f, build_command: e.target.value }))} className="w-full bg-[#111] border border-white/10 rounded-md py-2 px-3 text-sm text-white focus:outline-none focus:border-white/30" placeholder="npm run build" />
+              </div>
+            </div>
           </div>
-          <div className='grid grid-cols-2 gap-4'>
-            <Input
-              label='Install Command'
-              placeholder='npm install'
-              value={form.install_command}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, install_command: e.target.value }))
-              }
-            />
-            <Input
-              label='Build Command'
-              placeholder='npm run build'
-              value={form.build_command}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, build_command: e.target.value }))
-              }
-            />
-          </div>
-          <Input
-            label='Start Command'
-            placeholder='npm start'
-            value={form.start_command}
-            onChange={(e) =>
-              setForm((f) => ({ ...f, start_command: e.target.value }))
-            }
-          />
-          <div className='mt-5 flex justify-end gap-3 border-t border-[var(--border)] pt-5'>
-            <Button
+
+          <div className='mt-8 flex justify-end gap-3 pt-6 border-t border-white/10'>
+            <button
               type='button'
-              variant='ghost'
               onClick={resetModal}
+              className="px-4 py-2 text-sm text-gray-400 hover:text-white transition-colors"
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
               type='submit'
               disabled={isCreating || loadingRepos}
+              className="bg-white text-black px-6 py-2 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors disabled:opacity-50"
             >
-              {isCreating ? 'Importing...' : 'Import Project'}
-            </Button>
+              {isCreating ? 'Importing...' : 'Deploy'}
+            </button>
           </div>
         </form>
       </Modal>
