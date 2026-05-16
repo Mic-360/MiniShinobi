@@ -252,49 +252,28 @@ export function Layout({
       <main className="relative z-10 flex-1">{children}</main>
 
       <footer className="border-t border-white/10 bg-black pt-12 md:pt-16 pb-8 px-6 text-sm text-gray-500">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 mb-12 md:mb-16">
-          <div className="col-span-2 md:col-span-1">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-12 mb-12 md:mb-16">
+          <div className="max-w-md">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
                  <Triangle className="w-3 h-3 text-black fill-black rotate-180" />
               </div>
               <span className="font-semibold text-white">MiniShinobi</span>
             </div>
-            <p className="text-gray-400 max-w-xs leading-relaxed">
-              Decentralized edge computing for developers. Calm power, invisible complexity.
+            <p className="text-gray-400 leading-relaxed">
+              Decentralized edge computing for developers. Calm power, invisible complexity. Self-hosted on your pocket devices.
             </p>
           </div>
-          <div>
-            <h4 className="font-semibold text-white mb-4">Frameworks</h4>
+          <div className="flex flex-col gap-4">
+            <h4 className="font-semibold text-white">Connect</h4>
             <ul className="space-y-3">
-              <li><a href="#" className="hover:text-white transition-colors">Next.js</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">React</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Vue</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold text-white mb-4">Resources</h4>
-            <ul className="space-y-3">
-              <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Guides</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">API Reference</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-semibold text-white mb-4">Company</h4>
-            <ul className="space-y-3">
-              <li><a href="#" className="hover:text-white transition-colors">About</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
-              <li><a href="https://github.com/Mic-360/MiniShinobi" className="hover:text-white transition-colors">GitHub</a></li>
+              <li><a href="https://github.com/Mic-360/MiniShinobi" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">GitHub Source</a></li>
+              <li><a href="https://bhaumicsingh.tech" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">Developer</a></li>
             </ul>
           </div>
         </div>
         <div className="max-w-7xl mx-auto border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-center md:text-left">© {new Date().getFullYear()} MiniShinobi Inc.</p>
-          <div className="flex flex-wrap justify-center gap-4 md:mt-0">
-            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-          </div>
+          <p className="text-center md:text-left">© {new Date().getFullYear()} MiniShinobi. Built for the decentralized web.</p>
         </div>
       </footer>
     </div>

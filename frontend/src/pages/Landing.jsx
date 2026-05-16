@@ -11,14 +11,12 @@ import { TerminalWindow, Infinity as InfinityIcon, ShieldCheck, GlobeHemisphereW
 gsap.registerPlugin(ScrollTrigger);
 
 const images = {
-  hero: 'https://picsum.photos/seed/minishinobi-hero/1920/1080',
-  inline: 'https://picsum.photos/seed/minishinobi-micro/200/100',
-  card1: 'https://picsum.photos/seed/minishinobi-code/800/600',
-  card2: 'https://picsum.photos/seed/minishinobi-server/800/600',
-  card3: 'https://picsum.photos/seed/minishinobi-edge/800/600',
-  card4: 'https://picsum.photos/seed/minishinobi-security/800/600',
-  stack1: 'https://picsum.photos/seed/minishinobi-stack1/1200/800',
-  stack2: 'https://picsum.photos/seed/minishinobi-stack2/1200/800',
+  hero: '/hero.png',
+  inline: '/inline.png',
+  card1: '/card1.png',
+  card2: '/card2.png',
+  stack1: '/stack1.png',
+  stack2: '/stack2.png',
 };
 
 export default function Landing() {
