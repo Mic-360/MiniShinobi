@@ -1,4 +1,4 @@
-﻿const fs = require('fs');
+const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
 
@@ -56,10 +56,9 @@ async function ensureRepo({ appsDir, projectName, repoUrl, branch, onLog }) {
     await runGit(['clone', '--branch', branch, '--single-branch', repoUrl, projectPath], appsDir, onLog);
   } else {
     onLog('system', `Updating existing repository at ${projectPath}`);
-    await runGit(['fetch', '--all', '--prune'], projectPath, onLog);
-    await runGit(['reset', '--hard', `origin/${branch}`], projectPath, onLog);
+    await runGit(['fetch', 'origin', `+refs/heads/${branch}:refs/remotes/origin/${branch}`], projectPath, onLog);
+    await runGit(['checkout', '-f', '-B', branch, `origin/${branch}`], projectPath, onLog);
     await runGit(['clean', '-fd'], projectPath, onLog);
-    await runGit(['checkout', branch], projectPath, onLog);
   }
 
   return projectPath;
